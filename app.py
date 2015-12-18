@@ -9,6 +9,7 @@ from logging import Formatter, FileHandler
 # from web_page_logger import WebPageHandler
 from forms import *
 import serial
+from cameras import IMICamera, CISCamera
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -48,6 +49,7 @@ def login_required(test):
 '''
 
 
+camera = IMICamera()
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -69,19 +71,14 @@ def home():
 @app.route('/remote', methods=['POST', 'GET'])
 def remote():
     form = RemoteConfig()
+
     if request.method == 'POST':
         if request.form['command'] in ['up', 'down', 'left', 'right', 'enter']:
             command = request.form['command']
             camera_id = request.form['camera_id']
             # port = request.form['port']
-            commands = dict(
-                up='01',
-                down='02',
-                left='03',
-                right='04',
-                enter='00'
-            )
-            send_command('#OKC=%s\r' % commands[command], port='/dev/ttyUSB0', camera_id='all')
+            camera.execute(command)
+
 
     return render_template('pages/remote.html', form=form)
 
