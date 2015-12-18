@@ -83,7 +83,7 @@ def remote():
                 enter='00'
             )
 
-            send_command('#OKC=%s\r' % commands[command], port='/dev/tty.usbserial-FTDEHLDE', camera_id='all')
+            send_command('#OKC=%s\r' % commands[command], port='/dev/ttyUSB0', camera_id='all')
 
     return render_template('pages/remote.html', form=form)
 
@@ -144,11 +144,6 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
-    app.run()
-
-# Or specify port manually:
-'''
-if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-'''
+
