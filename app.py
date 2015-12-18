@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
-
+import os
 from flask import Flask, render_template, request
 # from flask.ext.sqlalchemy import SQLAlchemy
 import logging
@@ -63,13 +63,12 @@ def send_command(command='', port='', camera_id='all'):
 
 @app.route('/')
 def home():
-    return render_template('pages/placeholder.home.html')
+    return render_template('pages/home.html')
 
 
 @app.route('/remote', methods=['POST', 'GET'])
 def remote():
     form = RemoteConfig()
-    print 'in'
     if request.method == 'POST':
         if request.form['command'] in ['up', 'down', 'left', 'right', 'enter']:
             command = request.form['command']
@@ -82,7 +81,6 @@ def remote():
                 right='04',
                 enter='00'
             )
-
             send_command('#OKC=%s\r' % commands[command], port='/dev/ttyUSB0', camera_id='all')
 
     return render_template('pages/remote.html', form=form)
@@ -94,7 +92,7 @@ def config():
 
 @app.route('/about')
 def about():
-    return render_template('pages/placeholder.about.html')
+    return render_template('pages/about.html')
 
 @app.route('/log')
 def log():
