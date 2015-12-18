@@ -1,0 +1,7 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Remote{% endblock %}
+{% block content %}
+{% for message in g.log_handler.get_messages() %}
+<p class='log'>{{ message }}</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Remote{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Remote</h1>
+</div>
+
+<!--parameters-->
+
+<form align="right" class="form-horizontal" method="POST" >
+  <!--<div align="right" class="form-group" >-->
+    <!--<div align="right" class="col-xs-6">-->
+      <!--{{ form.port.label }}-->
+    <!--</div>-->
+    <!--<div align="right" class="col-xs-6">-->
+      <!--{{ form.port(class_="form-control")}}-->
+    <!--</div>-->
+  <!--</div>-->
+  <div align="right" class="form-group">
+    <div class="col-xs-6">
+      {{ form.camera_id.label }}
+    </div>
+    <div class="col-xs-6">
+      {{ form.camera_id(class_="form-control")}}
+    </div>
+  </div>
+
+<!--control buttons-->
+
+  <div style="vertical-align:middle;text-align:center;">
+    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-up" value="up">
+    </button>
+  </div>​
+  <div style="vertical-align:middle;text-align:center;">
+    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-left" value="left">
+    </button>
+    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-ok-sign" value="enter">
+    </button>
+    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="right">
+    </button>
+  </div>​
+  <div style="vertical-align:middle;text-align:center;">
+    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-down" value="down">
+    </button>
+  </div>​
+
+</form>
+
+{% endblock %}
