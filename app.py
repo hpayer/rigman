@@ -73,7 +73,7 @@ def remote():
         if request.form['command'] in ['up', 'down', 'left', 'right', 'enter']:
             command = request.form['command']
             camera_id = request.form['camera_id']
-            port = request.form['port']
+            # port = request.form['port']
             commands = dict(
                 up='01',
                 down='02',
@@ -142,6 +142,6 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 80))
+    app.run(host='0.0.0.0', port=port, debug=True)
 
