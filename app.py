@@ -4,6 +4,7 @@
 import os
 from flask import Flask, render_template, request, json
 # from flask.ext.sqlalchemy import SQLAlchemy
+from flask_wtf import Form
 import logging
 from logging import Formatter, FileHandler
 # from web_page_logger import WebPageHandler
@@ -67,6 +68,13 @@ def send_command(command='', port='', camera_id='all'):
 def home():
     return render_template('pages/home.html', commands=AVAILABLE_COMMANDS)
 
+@app.route('/command', methods=['POST'])
+def command(cmd=None):
+    data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
+    data.update(dict(command=request.form['command']))
+    print data
+    return json.dumps({'status':'OK'})
+
 
 @app.route('/remote', methods=['POST', 'GET'])
 def remote():
@@ -81,15 +89,25 @@ def remote():
 
     return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
 
-@app.route('/command', methods=['POST'])
-def command(cmd=None):
-    data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
-    data.update(dict(command=request.form['command']))
-    print data
-    return json.dumps({'status':'OK'})
+
+def get_form(fields):
+    class NewForm(Form):
+        pass
+    for name, field in fields.items():
+        setattr(NewForm, name, field)
+    return NewForm
+
+
+@app.route('/registers',  methods=['POST', 'GET'])
+def registers():
+    fields = camera.pages['registers']
+    form = get_form(fields)()
+    return render_template('pages/registers.html', form=form)
 
 @app.route('/config')
 def config():
+    parameters = []
+
     return render_template('pages/config.html')
 
 @app.route('/about')

@@ -45,3 +45,4 @@ class RemoteConfig(Form):
         label='Camera ID:',
         choices=ids
     )
+
