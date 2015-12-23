@@ -1,0 +1,50 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Registers{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Registers</h1>
+</div>
+
+<!--parameters-->
+
+<form align="right" class="form-horizontal" method="POST" >
+    {% for field in form if field.label != 'Csrf Token'%}
+        <div align="right" class="form-group">
+            <div class="col-xs-6">
+                {{ field.label }}
+            </div>
+            <div class="col-xs-6">
+                {{ field }}
+                {% if field.type == 'IntegerRangeField' %}
+                    <!--<div>{{ field.type }}</div>-->
+                    <input type="text" id="textInput" value="">
+                {% endif %}
+
+                <!--(class_="form-control") }}-->
+            </div>
+        </div>
+    {% endfor %}
+</form>
+
+
+    <!--control buttons-->
+
+    <!--<div style="vertical-align:middle;text-align:center;">-->
+    <!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-up" value="up" onClick="command_click(this)">-->
+    <!--</button>-->
+    <!--</div>​-->
+    <!--<div style="vertical-align:middle;text-align:center;">-->
+    <!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-left" value="left" onClick="command_click(this)">-->
+    <!--</button>-->
+    <!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-ok-sign" value="enter" onClick="command_click(this)">-->
+    <!--</button>-->
+    <!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="right" onClick="command_click(this)">-->
+    <!--</button>-->
+    <!--</div>​-->
+    <!--<div style="vertical-align:middle;text-align:center;">-->
+    <!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-down" value="down" onClick="command_click(this)">-->
+    <!--</button>-->
+    <!--</div>​-->
+
+
+{% endblock %}
