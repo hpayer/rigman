@@ -28,22 +28,21 @@
 <!--control buttons-->
 
   <div style="vertical-align:middle;text-align:center;">
-    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-up" value="up">
+    <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-up" value="up" onClick="command_click()">
     </button>
   </div>​
   <div style="vertical-align:middle;text-align:center;">
-    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-left" value="left">
+    <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-left" value="left" onClick="command_click()">
     </button>
-    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-ok-sign" value="enter">
+    <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-ok-sign" value="enter" onClick="command_click()">
     </button>
-    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="right">
+    <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="right" onClick="command_click(this)">
     </button>
   </div>​
   <div style="vertical-align:middle;text-align:center;">
-    <button type="submit" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-down" value="down">
+    <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-down" value="down" onClick="command_click()">
     </button>
   </div>​
 
-</form>
 
 {% endblock %}

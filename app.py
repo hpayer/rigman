@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, json
 # from flask.ext.sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
@@ -65,7 +65,7 @@ def send_command(command='', port='', camera_id='all'):
 
 @app.route('/')
 def home():
-    return render_template('pages/home.html')
+    return render_template('pages/home.html', commands=AVAILABLE_COMMANDS)
 
 
 @app.route('/remote', methods=['POST', 'GET'])
@@ -79,9 +79,25 @@ def remote():
             # port = request.form['port']
             camera.execute(command)
 
+    return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
 
-    return render_template('pages/remote.html', form=form)
 
+# @app.route('/<cmd>')
+# def command(cmd=None):
+#     print 'in', cmd
+#     camera_command = cmd[0].upper()
+#     response = "Moving {}".format(cmd.capitalize())
+#     # print camera_command
+#
+#     # ser.write(camera_command)
+#     return response, 200, {'Content-Type': 'text/plain'}
+
+
+@app.route('/command', methods=['POST'])
+def command(cmd=None):
+    print 'cmd:', cmd
+    print request.form
+    return json.dumps({'status':'OK'})
 
 @app.route('/config')
 def config():
@@ -133,12 +149,14 @@ if not app.debug:
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
 
+
+
 #----------------------------------------------------------------------------#
 # Launch.
 #----------------------------------------------------------------------------#
 
 # Default port:
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 80))
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
 
