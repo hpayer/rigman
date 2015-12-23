@@ -81,22 +81,11 @@ def remote():
 
     return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
 
-
-# @app.route('/<cmd>')
-# def command(cmd=None):
-#     print 'in', cmd
-#     camera_command = cmd[0].upper()
-#     response = "Moving {}".format(cmd.capitalize())
-#     # print camera_command
-#
-#     # ser.write(camera_command)
-#     return response, 200, {'Content-Type': 'text/plain'}
-
-
 @app.route('/command', methods=['POST'])
 def command(cmd=None):
-    print 'cmd:', cmd
-    print request.form
+    data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
+    data.update(dict(command=request.form['command']))
+    print data
     return json.dumps({'status':'OK'})
 
 @app.route('/config')
