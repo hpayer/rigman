@@ -11,17 +11,33 @@
     {% for field in form if field.label != 'Csrf Token'%}
         <div align="right" class="form-group">
             <div class="col-xs-6">
-                {{ field.label }}
+                {% if field.name != 'csrf_token' %}
+                    {{ field.label }}
+                {% endif %}
             </div>
-            <div class="col-xs-6">
-                {{ field }}
-                {% if field.type == 'IntegerRangeField' %}
-                    <!--<div>{{ field.type }}</div>-->
-                    <input type="text" id="textInput" value="">
+                {% if field.type in ['IntegerRangeField'] %}
+                    <div class="col-xs-6">
+                        <input
+                                for="{{ field.id }}" id="selected-{{ field.id }}",  oninput="UpdateRangeSlider(value, id)">
+                        </input>
+                        {{ field (oninput="UpdateRangeText(value, id)")}}
+
+                    </div>
+
+                {% elif field.type in ['FormField'] %}
+                    <div class="col-xs-4" >{{ field.slider }}</div>
+                    <div class="col-xs-1" >{{ field.number }}</div>
+
+                {% elif field.type in ['ToggleField'] %}
+                    <div class="col-xs-6">{{ field }}</div>
+
+                {% elif field.type in ['IntegerRangeWithNumberField'] %}
+                    {{ field }}
+                {% else %}
+                    <div class="col-xs-6">{{ field (class_="form-control")}}</div>
                 {% endif %}
 
                 <!--(class_="form-control") }}-->
-            </div>
         </div>
     {% endfor %}
 </form>

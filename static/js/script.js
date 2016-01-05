@@ -21,3 +21,13 @@ function command_click(button){
     });
 };
 
+
+function UpdateRangeText(value, id) {
+    console.log(id);
+    document.querySelector('#selected-' + id).value = value;
+}
+function UpdateRangeSlider(value, id) {
+    console.log(id);
+    selector = id.replace("selected-", "");
+    document.querySelector('#' + selector).value = value;
+}

@@ -101,7 +101,7 @@ def get_form(fields):
 @app.route('/registers',  methods=['POST', 'GET'])
 def registers():
     fields = camera.pages['registers']
-    form = get_form(fields)()
+    form = get_form(fields)(csrf_enabled=False)
     return render_template('pages/registers.html', form=form)
 
 @app.route('/config')

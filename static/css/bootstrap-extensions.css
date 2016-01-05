@@ -8,3 +8,12 @@
             border-radius: 8px;
     }
 
+
+input[type=range] {
+  width: 100%;
+}
+
+.form-control{
+/* text-align:right; */
+    text-align:left;
+}
