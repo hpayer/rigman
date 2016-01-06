@@ -5,6 +5,14 @@
     <h1>Registers</h1>
 </div>
 
+<!--control buttons-->
+
+<div style="vertical-align:middle;text-align:center;">
+<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-floppy-save" value="up" onClick="command_click(this)">
+</button>
+</div>​
+
+
 <!--forms-->
 
 <form align="right" class="form-horizontal" method="POST" >
@@ -29,6 +37,8 @@
                         {{ field }}
                     {% elif field.type in ['IntegerRangeField'] %}
                         {{ field }}
+                   {% elif field.type in ['IntegerRangeField'] %}
+                        {{ field }}
                     {% else %}
                         <div class="col-xs-6">{{ field (class_="form-control")}}</div>
                     {% endif %}
@@ -41,24 +51,7 @@
 </form>
 
 
-<!--control buttons-->
 
-<!--<div style="vertical-align:middle;text-align:center;">-->
-<!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-up" value="up" onClick="command_click(this)">-->
-<!--</button>-->
-<!--</div>​-->
-<!--<div style="vertical-align:middle;text-align:center;">-->
-<!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-left" value="left" onClick="command_click(this)">-->
-<!--</button>-->
-<!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-ok-sign" value="enter" onClick="command_click(this)">-->
-<!--</button>-->
-<!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="right" onClick="command_click(this)">-->
-<!--</button>-->
-<!--</div>​-->
-<!--<div style="vertical-align:middle;text-align:center;">-->
-<!--<button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-down" value="down" onClick="command_click(this)">-->
-<!--</button>-->
-<!--</div>​-->
 
 
 {% endblock %}

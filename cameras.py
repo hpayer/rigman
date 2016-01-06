@@ -1,11 +1,20 @@
 import serial
-from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectField, FormField
+from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectField, FormField, SubmitField
 from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms import validators
 from wtforms import Form
 from forms import ToggleField, IntegerRangeWithNumberField
 from rig_io import Rig_io
 
+
+class CameraConfigForm(Form):
+    camera_config = SelectField(
+        "Config",
+        choices=[('exterior', 'Exterior'), ('test', 'Test'), ]
+    )
+    save_config = SubmitField(
+        'Save',
+    )
 
 
 class IMIWhiteBalanceForm(Form):
@@ -98,7 +107,9 @@ class IMIExposureForm(Form):
     )
 
 
+
 class IMIRegistersForm(Form):
+    camera_config = FormField(CameraConfigForm, label="Config")
     white_balance = FormField(IMIWhiteBalanceForm, label="White Balance")
     exposure = FormField(IMIExposureForm, label="Exposure")
     hue = FormField(IMIHueForm, label='Hue')

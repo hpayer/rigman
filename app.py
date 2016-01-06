@@ -144,7 +144,6 @@ def registers():
 @app.route('/config')
 def config():
     parameters = []
-
     return render_template('pages/config.html')
 
 @app.route('/about')
