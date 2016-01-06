@@ -4,20 +4,7 @@ from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms import validators
 from wtforms import Form
 from forms import ToggleField, IntegerRangeWithNumberField
-
-class Camera(object):
-
-    @property
-    def port(self):
-        raise NotImplemented('not impllemented')
-
-    # def execute(self, command, camera_id='all'):
-    #     ser = serial.Serial(self.port)
-    #     result = ser.write(self.commands[command])
-    #     ser.close()
-
-    def execute(self, command, camera_id='all'):
-        print command, camera_id
+from rig_io import Rig_io
 
 
 
@@ -80,8 +67,40 @@ class IMIHueForm(Form):
     )
 
 
+class IMIExposureForm(Form):
+    dc_lens_mode = SelectField(
+        "Mode",
+        choices=[(0, 'Indoor'), (1, "Outdoor")]
+    )
+    dc_indoor_shut_mode = SelectField(
+        "Shutter",
+        choices=[
+            (0x0, 'Auto'),
+            (0x1, '1/60(50)'),
+            (0x2, '1/100(120)(FLK)'),
+            (0x3, '1/240(200)'),
+            (0x4, '1/480(400)'),
+            (0x5, '1/1000'),
+            (0x6, '1/2000'),
+            (0x7, '1/5000'),
+            (0x8, '1/10000'),
+            (0x9, '1/50000'),
+            (0xA, 'x2'),
+            (0xB, 'x4'),
+            (0xC, 'x6'),
+            (0xD, 'x8'),
+            (0xE, 'x10'),
+            (0xF, 'x15'),
+            (0x10, 'x20'),
+            (0x11, 'x25'),
+            (0x12, 'x30'),
+        ]
+    )
+
+
 class IMIRegistersForm(Form):
     white_balance = FormField(IMIWhiteBalanceForm, label="White Balance")
+    exposure = FormField(IMIExposureForm, label="Exposure")
     hue = FormField(IMIHueForm, label='Hue')
 
 
@@ -100,39 +119,69 @@ class IMIRemoteForm(Form):
     config = FormField(IMIRemote, label='Selection')
 
 
+class Camera(object):
+
+    @property
+    def port(self):
+        raise NotImplemented('not impllemented')
+
+    # def execute(self, command, camera_id='all'):
+    #     ser = serial.Serial(self.port)
+    #     result = ser.write(self.commands[command])
+    #     ser.close()
+
+    # def execute(self, command, camera_id='all'):
+        # print 'execute:', command, camera_id
+
+    def execute(self, data):
+        getattr(self, data.pop('command'))(data)
+
+
 class IMICamera(Camera):
-    # _commands = dict(
-    #     up='01',
-    #     down='02',
-    #     left='03',
-    #     right='04',
-    #     enter='00',
-    #     # wb = dict(
-    #     #     values= []
-    #     #         atw=5
-    #     # )
-    # )
-    # port = '/dev/ttyUSB0'
+
+    port = '/dev/ttyUSB0'
     pages = dict(
         registers=IMIRegistersForm(),
         remote=IMIRemoteForm()
     )
+    _control_commands = dict(
+            up='01',
+            down='02',
+            left='03',
+            right='04',
+            enter='00',
+        )
+    control_commands = dict([(key, '#OKC=%s\r' % value) for key, value in _control_commands.iteritems()])
 
 
+    def __init__(self):
+        self.bus = Rig_io()
+        self.bus_methods =[
+            method for method in dir(self.bus) if callable(getattr(self.bus, method)) and method != "__init__"
+        ]
 
-    # pages = dict(
-    #     remote=OrderedDict(
-    #         port=SelectField("port", [('usb0', 'usb0')])
-    #     ),
-    #     registers=OrderedDict(
-    # )
-    # )
+    def execute(self, data):
+        command = data.pop('command')
+        camera_id = data.get('camera_id')
+
+        print command
+        # see if bus has command
+        if command in self.bus_methods:
+            print 'executing:', command
+            getattr(self.bus, command)()
+            return
+
+        if command in self.control_commands:
+            self.send_command(command, port=self.port, camera_id='all')
+            return
 
 
-
-    @property
-    def commands(self):
-        return dict([(key, '#OKC=%s\r' % value) for key, value in self._commands.iteritems()] )
+    @staticmethod
+    def send_command(command='', port='', camera_id='all'):
+        ser = serial.Serial(port=port)
+        result = ser.write(command)
+        # print result
+        ser.close()
 
 
 class CISCamera(Camera):

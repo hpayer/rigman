@@ -35,7 +35,7 @@ class ForgotForm(Form):
     )
 
 
-class RemoteConfig(Form):
+class RemoteForm(Form):
     port = SelectField(
         label='Port:',
         choices=[("COM%d"%port, "COM%d"%port) for port in xrange(0,10)]
@@ -48,6 +48,22 @@ class RemoteConfig(Form):
         label='Camera ID:',
         choices=ids
     )
+
+
+class MultiViewForm(Form):
+    port = SelectField(
+        label='Port:',
+        choices=[("COM%d"%port, "COM%d"%port) for port in xrange(0,10)]
+    )
+
+    ids = [('All', 'all')]
+    ids.extend([(id, id) for id in xrange(1, 53)])
+
+    camera_id = SelectField(
+        label='Camera ID:',
+        choices=ids
+    )
+
 
 
 class ToggleWidget(widgets.CheckboxInput):

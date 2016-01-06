@@ -1,0 +1,42 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Registers{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Multi View</h1>
+</div>
+
+
+<!--parameters-->
+
+<form align="right" class="form-horizontal" method="POST" >
+  <div align="right" class="form-group">
+    <div class="col-xs-6">
+      {{ form.camera_id.label }}
+    </div>
+    <div class="col-xs-6">
+      {{ form.camera_id(class_="form-control")}}
+    </div>
+  </div>
+
+
+  <!--control buttons-->
+
+  <div style="vertical-align:middle;text-align:center;">
+  <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-th" value="mv_all" onClick="command_click(this)">
+  </button>
+  <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-arrow-right" value="mv_step" onClick="command_click(this)">
+  </button>
+  </div>​
+
+ <div style="vertical-align:middle;text-align:center;">
+  <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-bullhorn" value="mv_all" onClick="command_click(this)">
+  </button>
+  </div>​
+ <div style="vertical-align:middle;text-align:center;">
+  <button type="button" name="command" class="btn btn-default btn-xlarge glyphicon glyphicon-record" value="mv_all" onClick="command_click(this)">
+  </button>
+  </div>​
+
+</form>
+
+{% endblock %}

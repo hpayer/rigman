@@ -20,13 +20,15 @@ from wtforms import FormField
 app = Flask(__name__)
 app.config.from_object('config')
 
-LEFT, RIGHT, UP, DOWN, ENTER = "left", "right", "up", "down", "enter"
+LEFT, RIGHT, UP, DOWN, ENTER, NEXT, ALL = "left", "right", "up", "down", "enter", "next", 'all'
 AVAILABLE_COMMANDS = {
     'Left': LEFT,
     'Right': RIGHT,
     'Up': UP,
     'Down': DOWN,
-    'Enter': ENTER
+    'Enter': ENTER,
+    'Next': NEXT,
+    'All': ALL
 }
 #db = SQLAlchemy(app)
 
@@ -70,17 +72,29 @@ def home():
     return render_template('pages/home.html', commands=AVAILABLE_COMMANDS)
 
 
+# @app.route('/<cmd>')
+# def command(cmd=None):
+#     print 'in', cmd
+#     camera_command = cmd[0].upper()
+#     response = "Moving {}".format(cmd.capitalize())
+#     # print camera_command
+#
+#     # ser.write(camera_command)
+#     return response, 200, {'Content-Type': 'text/plain'}
+
+
 @app.route('/command', methods=['POST'])
 def command(cmd=None):
     data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
     data.update(dict(command=request.form['command']))
-    print data
+    # print 'command:', data
+    camera.execute(data)
     return json.dumps({'status':'OK'})
 
 
 @app.route('/remote', methods=['POST', 'GET'])
 def remote():
-    form = RemoteConfig()
+    form = RemoteForm()
 
     if request.method == 'POST':
         if request.form['command'] in ['up', 'down', 'left', 'right', 'enter']:
@@ -90,6 +104,20 @@ def remote():
             camera.execute(command)
 
     return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
+
+
+@app.route('/multi_view', methods=['POST', 'GET'])
+def multi_view():
+    form = MultiViewForm()
+
+    if request.method == 'POST':
+        if request.form['command'] in ['all', 'next']:
+            command = request.form['command']
+            # camera_id = request.form['camera_id']
+            # port = request.form['port']
+            camera.execute(command)
+
+    return render_template('pages/multi_view.html', form=form)
 
 
 def get_form(fields):
@@ -110,8 +138,6 @@ def get_formfield(form_classes):
 
 @app.route('/registers',  methods=['POST', 'GET'])
 def registers():
-    # form_classes = camera.pages['registers']
-    # form = get_formfield(form_classes)(csrf_enabled=False)
     form = camera.pages['registers']
     return render_template('pages/registers.html', form=form)
 
