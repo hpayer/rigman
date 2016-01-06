@@ -5,39 +5,37 @@
     <h1>Registers</h1>
 </div>
 
-<!--parameters-->
+<!--forms-->
 
 <form align="right" class="form-horizontal" method="POST" >
-    {% for field in form if field.label != 'Csrf Token'%}
+    <div>{{ form.name }}</div>
+    {% for formfield in form %}
         <div align="right" class="form-group">
-            <div class="col-xs-6">
-                {% if field.name != 'csrf_token' %}
-                    {{ field.label }}
-                {% endif %}
-            </div>
-                {% if field.type in ['IntegerRangeField'] %}
-                    <div class="col-xs-6">
-                        <input
-                                for="{{ field.id }}" id="selected-{{ field.id }}",  oninput="UpdateRangeSlider(value, id)">
-                        </input>
-                        {{ field (oninput="UpdateRangeText(value, id)")}}
+            <div>{{ formfield.label (class_="form-control")}}</div>
+            {% for field in formfield if field.label != 'Csrf Token'%}
+                <div class="col-xs-6">
+                    {% if field.name != 'csrf_token' %}
+                        {{ field.label }}
+                    {% endif %}
+                </div>
+                    {% if field.type in ['FormField'] %}
+                        <div class="col-xs-4" >{{ field.slider }}</div>
+                        <div class="col-xs-1" >{{ field.number }}</div>
 
-                    </div>
+                    {% elif field.type in ['ToggleField'] %}
+                        <div class="col-xs-6">{{ field }}</div>
 
-                {% elif field.type in ['FormField'] %}
-                    <div class="col-xs-4" >{{ field.slider }}</div>
-                    <div class="col-xs-1" >{{ field.number }}</div>
+                    {% elif field.type in ['IntegerRangeWithNumberField'] %}
+                        {{ field }}
+                    {% elif field.type in ['IntegerRangeField'] %}
+                        {{ field }}
+                    {% else %}
+                        <div class="col-xs-6">{{ field (class_="form-control")}}</div>
+                    {% endif %}
+                    <br></br>
 
-                {% elif field.type in ['ToggleField'] %}
-                    <div class="col-xs-6">{{ field }}</div>
-
-                {% elif field.type in ['IntegerRangeWithNumberField'] %}
-                    {{ field }}
-                {% else %}
-                    <div class="col-xs-6">{{ field (class_="form-control")}}</div>
-                {% endif %}
-
-                <!--(class_="form-control") }}-->
+                    <!--(class_="form-control") }}-->
+            {% endfor %}
         </div>
     {% endfor %}
 </form>

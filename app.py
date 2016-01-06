@@ -11,6 +11,7 @@ from logging import Formatter, FileHandler
 from forms import *
 import serial
 from cameras import IMICamera, CISCamera
+from wtforms import FormField
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -68,6 +69,7 @@ def send_command(command='', port='', camera_id='all'):
 def home():
     return render_template('pages/home.html', commands=AVAILABLE_COMMANDS)
 
+
 @app.route('/command', methods=['POST'])
 def command(cmd=None):
     data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
@@ -98,10 +100,19 @@ def get_form(fields):
     return NewForm
 
 
+def get_formfield(form_classes):
+    class NewForm(Form):
+        pass
+    for form_class in form_classes:
+        setattr(NewForm, form_class.__name__, FormField(form_class, 'White Balance'))
+    return NewForm
+
+
 @app.route('/registers',  methods=['POST', 'GET'])
 def registers():
-    fields = camera.pages['registers']
-    form = get_form(fields)(csrf_enabled=False)
+    # form_classes = camera.pages['registers']
+    # form = get_formfield(form_classes)(csrf_enabled=False)
+    form = camera.pages['registers']
     return render_template('pages/registers.html', form=form)
 
 @app.route('/config')
