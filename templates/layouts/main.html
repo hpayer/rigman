@@ -58,7 +58,7 @@
             <li {% if request.endpoint == 'home' %} class="active" {% endif %}><a href="{{ url_for('home') }}">Home</a></li>
             <li {% if request.endpoint == 'remote' %} class="active" {% endif %}><a href="{{ url_for('remote') }}">Remote</a></li>
             <li {% if request.endpoint == 'registers' %} class="active" {% endif %}><a href="{{ url_for('registers') }}">Registers</a></li>
-            <li {% if request.endpoint == 'multi_view' %} class="active" {% endif %}><a href="{{ url_for('multi_view') }}">Multi View</a></li>
+            <li {% if request.endpoint == 'multi_view' %} class="active" {% endif %}><a href="{{ url_for('control') }}">Control</a></li>
             <!--<li {% if request.endpoint == 'log' %} class="active" {% endif %}><a href="{{ url_for('log') }}">Log</a></li>-->
             <!--<li {% if request.endpoint == 'about' %} class="active" {% endif %}><a href="{{ url_for('about') }}">About</a></li>-->
             <!--<li class="dropdown">-->

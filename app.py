@@ -108,8 +108,8 @@ def remote():
     return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
 
 
-@app.route('/multi_view', methods=['POST', 'GET'])
-def multi_view():
+@app.route('/control', methods=['POST', 'GET'])
+def control():
     form = MultiViewForm()
 
     if request.method == 'POST':
@@ -119,7 +119,7 @@ def multi_view():
             # port = request.form['port']
             camera.execute(command)
 
-    return render_template('pages/multi_view.html', form=form)
+    return render_template('pages/control.html', form=form)
 
 
 def get_form(fields):
