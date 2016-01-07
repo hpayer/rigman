@@ -150,6 +150,7 @@ class Camera(object):
 
 
 class IMICamera(Camera):
+    delay = 1
 
     port = '/dev/ttyUSB0'
     pages = dict(
@@ -165,7 +166,6 @@ class IMICamera(Camera):
         )
     control_commands = dict([(key, '#OKC=%s\r' % value) for key, value in _control_commands.iteritems()])
 
-
     def __init__(self):
         self.bus = Rig_io()
         self.bus_methods =[
@@ -174,7 +174,7 @@ class IMICamera(Camera):
 
     def execute(self, data):
         command = data.pop('command')
-        camera_id = data.get('camera_id')
+        # camera_id = data.get('camera_id')
         print 'executing:', command
 
         if command in self._control_commands:
@@ -193,20 +193,20 @@ class IMICamera(Camera):
 
     def all_cameras(self):
         self.bus.mv_all()
-        time.sleep(1)
+        time.sleep(self.delay)
         self.bus.mv_idle()
         print 'All cameras done'
 
     def next_camera(self):
         self.bus.mv_step()
-        time.sleep(1)
+        time.sleep(self.delay)
         self.bus.mv_idle()
         print 'Next camera done'
 
     def flash_and_beep(self):
         print 'closing contact'
         self.bus.cl_off()
-        time.sleep(1)
+        time.sleep(self.delay)
         print 'openning contact'
         self.bus.cl_on()
         print 'done'
@@ -214,7 +214,7 @@ class IMICamera(Camera):
     def record_toggle(self):
         print 'recording'
         self.bus.rec_on()
-        time.sleep(1)
+        time.sleep(self.delay)
         self.bus.rec_off()
 
     @staticmethod
