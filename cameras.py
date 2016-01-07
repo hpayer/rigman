@@ -18,6 +18,15 @@ class CameraConfigForm(Form):
     )
 
 
+class CameraSelectionForm(Form):
+    ids = [('All', 'all')]
+    ids.extend([(id, id) for id in xrange(1, 53)])
+    camera_config = SelectField(
+        "Camera",
+        choices=ids
+    )
+
+
 class IMIWhiteBalanceForm(Form):
     white_balance_mode = SelectField(
         "Mode",
@@ -110,7 +119,8 @@ class IMIExposureForm(Form):
 
 
 class IMIRegistersForm(Form):
-    camera_config = FormField(CameraConfigForm, label="Config")
+    # camera_config = FormField(CameraConfigForm, label="Config")
+    camera_selection = FormField(CameraSelectionForm, label="Selection")
     white_balance = FormField(IMIWhiteBalanceForm, label="White Balance")
     exposure = FormField(IMIExposureForm, label="Exposure")
     hue = FormField(IMIHueForm, label='Hue')
@@ -174,22 +184,27 @@ class IMICamera(Camera):
 
     def execute(self, data):
         command = data.pop('command')
-        # camera_id = data.get('camera_id')
+        self.data = data
         print 'executing:', command
 
         if command in self._control_commands:
-            self.send_command(self.control_commands[command], port=self.port, camera_id='all')
+            self.send_command(self.control_commands[command], port=self.port)
             print command, 'executed'
             return
 
-        local_command = getattr(self, command)
+        local_command = getattr(self, command, None)
         if local_command:
             local_command()
 
         # see if bus has command
-        if command in self.bus_methods:
+        elif command in self.bus_methods:
             getattr(self.bus, command)()
+        else:
+            print command, 'not found'
             return
+
+        print command, 'executed'
+        return
 
     def all_cameras(self):
         self.bus.mv_all()
@@ -218,7 +233,7 @@ class IMICamera(Camera):
         self.bus.rec_off()
 
     @staticmethod
-    def send_command(command='', port='', camera_id='all'):
+    def send_command(command='', port='',):
         try:
             ser = serial.Serial(port=port)
             result = ser.write(command)
@@ -226,6 +241,17 @@ class IMICamera(Camera):
             ser.close()
         except OSError:
             print 'Serial device %s not found'%port
+
+    def send_config(self):
+        print self.data
+        camera_id = self.data.pop('camera_selection-camera_config') # 'All', '1', '2'
+        print camera_id
+        if camera_id != 'All':
+            camera_id = '%02d' % int(camera_id)
+            for key, value in self.data.items():
+                print key, value
+            command = "#ISPW2=%s"%(camera_id)
+
 
 
 class CISCamera(Camera):
