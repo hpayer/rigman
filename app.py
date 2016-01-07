@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import os
-from flask import Flask, render_template, request, json
+from flask import Flask, render_template, request, json, redirect, url_for
 # from flask.ext.sqlalchemy import SQLAlchemy
 from flask_wtf import Form
 import logging
@@ -67,8 +67,10 @@ def send_command(command='', port='', camera_id='all'):
     ser.close()
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
+    if request.method == 'POST':
+        return redirect(url_for(request.form['submit']))
     return render_template('pages/home.html', commands=AVAILABLE_COMMANDS)
 
 
