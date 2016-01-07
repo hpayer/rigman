@@ -21,3 +21,6 @@ input[type=range] {
 .glyphicon {
     font-size: 42px;
 }
+.glyphicon.glyphicon-record{
+    color: #C80000 ;
+}

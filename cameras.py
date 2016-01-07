@@ -1,4 +1,5 @@
 import serial
+import time
 from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectField, FormField, SubmitField
 from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms import validators
@@ -174,25 +175,57 @@ class IMICamera(Camera):
     def execute(self, data):
         command = data.pop('command')
         camera_id = data.get('camera_id')
+        print 'executing:', command
 
-        print command
+        if command in self._control_commands:
+            self.send_command(self.control_commands[command], port=self.port, camera_id='all')
+            print command, 'executed'
+            return
+
+        local_command = getattr(self, command)
+        if local_command:
+            local_command()
+
         # see if bus has command
         if command in self.bus_methods:
-            print 'executing:', command
             getattr(self.bus, command)()
             return
 
-        if command in self.control_commands:
-            self.send_command(command, port=self.port, camera_id='all')
-            return
+    def all_cameras(self):
+        self.bus.mv_all()
+        time.sleep(1)
+        self.bus.mv_idle()
+        print 'All cameras done'
 
+    def next_camera(self):
+        self.bus.mv_step()
+        time.sleep(1)
+        self.bus.mv_idle()
+        print 'Next camera done'
+
+    def flash_and_beep(self):
+        print 'closing contact'
+        self.bus.cl_off()
+        time.sleep(1)
+        print 'openning contact'
+        self.bus.cl_on()
+        print 'done'
+
+    def record_toggle(self):
+        print 'recording'
+        self.bus.rec_on()
+        time.sleep(1)
+        self.bus.rec_off()
 
     @staticmethod
     def send_command(command='', port='', camera_id='all'):
-        ser = serial.Serial(port=port)
-        result = ser.write(command)
-        # print result
-        ser.close()
+        try:
+            ser = serial.Serial(port=port)
+            result = ser.write(command)
+            # print result
+            ser.close()
+        except OSError:
+            print 'Serial device %s not found'%port
 
 
 class CISCamera(Camera):
