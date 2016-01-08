@@ -20,17 +20,28 @@ class CameraConfigForm(Form):
 
 class CameraSelectionForm(Form):
     ids = [('All', 'all')]
-    ids.extend([(id, id) for id in xrange(1, 53)])
-    camera_config = SelectField(
-        "Camera",
-        choices=ids
+    ids.extend([(id, id) for id in xrange(0, 256)])
+    # camera_config = SelectField(
+    #     "Camera",
+    #     choices=ids
+    # )
+    camera_id = IntegerRangeWithNumberField(
+        "Camera (-1=All)",
+        validators=[
+            validators.DataRequired(),
+            validators.NumberRange(min=-1, max=255, message='min:%(min)s max%(max)s')
+        ],
+        minimum=-1,
+        maximum=255,
+        default=-1
     )
 
 
 class IMIWhiteBalanceForm(Form):
     white_balance_mode = SelectField(
         "Mode",
-        choices=[(0, 'ATW'), (1, 'AWC'), (2, 'INDOOR'), (3, 'OUTDOOR'), (4, 'MANUAL'), (5, 'AWB')]
+        choices=[(0, 'ATW'), (1, 'AWC'), (2, 'INDOOR'), (3, 'OUTDOOR'), (4, 'MANUAL'), (5, 'AWB')],
+        default=4,
     )
     manual_blue_gain = IntegerRangeWithNumberField(
         "Blue Gain",
@@ -38,7 +49,7 @@ class IMIWhiteBalanceForm(Form):
             validators.DataRequired(),
             validators.NumberRange(min=1, max=100, message='min:%(min)s max%(max)s')
         ],
-        default=100
+        default=50
     )
     manual_red_gain = IntegerRangeWithNumberField(
        "Red Gain",
@@ -46,7 +57,7 @@ class IMIWhiteBalanceForm(Form):
             validators.DataRequired(),
             validators.NumberRange(min=1, max=100, message='min:%(min)s max%(max)s')
         ],
-        default=100
+        default=50
     )
     awc_set = ToggleField('AWC Set')
 
@@ -58,7 +69,7 @@ class IMIHueForm(Form):
             validators.DataRequired(),
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
-        default=255,
+        default=128,
         minimum=1,
         maximum=255,
     )
@@ -69,7 +80,7 @@ class IMIHueForm(Form):
             validators.DataRequired(),
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
-        default=255,
+        default=128,
         minimum=1,
         maximum=255,
     )
@@ -77,10 +88,10 @@ class IMIHueForm(Form):
     hue_gain_b = IntegerRangeWithNumberField(
         "Blue",
         validators=[
-            validators.DataRequired(),
+            validators.Required(),
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
-        default=255,
+        default=128,
         minimum=1,
         maximum=255,
     )
@@ -117,7 +128,6 @@ class IMIExposureForm(Form):
     )
 
 
-
 class IMIRegistersForm(Form):
     # camera_config = FormField(CameraConfigForm, label="Config")
     camera_selection = FormField(CameraSelectionForm, label="Selection")
@@ -129,7 +139,7 @@ class IMIRegistersForm(Form):
 class IMIRemote(Form):
     camera_id = SelectField(
         "Camera ID",
-        choices=[(c, c) for c in ['all', 1, 2, 3, 4, 5, 6]]
+        choices=[(c, c) for c in ['all', 1, 2, 3, 4, 5, 6]],
     )
     port = SelectField(
         "Port",
@@ -176,6 +186,17 @@ class IMICamera(Camera):
         )
     control_commands = dict([(key, '#OKC=%s\r' % value) for key, value in _control_commands.iteritems()])
 
+    addresses = {
+        'exposure-dc_indoor_shut_mode': 'E108',
+        'exposure-dc_lens_mode': 'E0F1',
+        'hue-hue_gain_b': '03E7',
+        'hue-hue_gain_g': '03E5',
+        'hue-hue_gain_r': '03E3',
+        'white_balance-manual_blue_gain': 'E201',
+        'white_balance-manual_red_gain': 'E202',
+        'white_balance-white_balance_mode': 'E200',
+    }
+
     def __init__(self):
         self.bus = Rig_io()
         self.bus_methods =[
@@ -188,6 +209,7 @@ class IMICamera(Camera):
         print 'executing:', command
 
         if command in self._control_commands:
+            camera_id =  data.get('camera_id', 'All')
             self.send_command(self.control_commands[command], port=self.port)
             print command, 'executed'
             return
@@ -210,14 +232,14 @@ class IMICamera(Camera):
         self.bus.mv_all()
         time.sleep(0.1)
         self.bus.mv_idle()
-	time.sleep(0.1)
+        time.sleep(0.1)
         print 'All cameras done'
 
     def next_camera(self):
         self.bus.mv_step()
         time.sleep(0.1)
         self.bus.mv_idle()
-	time.sleep(0.1)
+        time.sleep(0.1)
         print 'Next camera done'
 
     def flash_and_beep(self):
@@ -235,48 +257,38 @@ class IMICamera(Camera):
         self.bus.rec_off()
 
     def record_stop(self):
-    	print 'stop recording'
-	self.bus.rec_on()
-	time.sleep(4)
-	slef.bus.rec_off()	
+        print 'stop recording'
+        self.bus.rec_on()
+        time.sleep(4)
+        self.bus.rec_off()
 
-    @staticmethod
-    def send_command(command='', port='',):
+    def send_command(self, command='', port='',):
         try:
-            ser = serial.Serial(port=port)
+            ser = serial.Serial(port=self.port)
             result = ser.write(command)
             # print result
             ser.close()
         except OSError:
-            print 'Serial device %s not found'%port
+            # print 'Serial device %s not found'%port
+            pass
 
-    def send_config(self):
-        print self.data
-        camera_id = self.data.pop('camera_selection-camera_config') # 'All', '1', '2'
-        print camera_id
-        addresses = dict(
-            white_balance_mode='E200',
-            manual_blue_gain='E201',
-            manual_red_gain='E202',
-        )
-
+    def push_config(self):
+        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        template = "#ISPW={address}{data}\r"
         if camera_id != 'All':
-            camera_id = '%02d' % int(camera_id)
-            for key, value in self.data.items():
-                # print key, value
-                key = key.split('-')[-1]
-                if key in addresses:
-                    # command = "#ISPW2=%s"%(camera_id)
-                    command = "#ISPW2={camera_id}{address}{data}".format(
-                        camera_id=camera_id,
-                        address=addresses[key],
-                        data='%02d'%int(value)
-                    )
+            template = "#ISPW2={camera_id}{address}{data}\r"
 
-                    print 'Sending', command, 'from', key, value
-                    self.send_command(command, port=self.port)
-                    print 'command sent'
+        for key, value in self.data.items():
+            if key.endswith('_number'):
+                continue
+            data = '%02d' % int(hex(int(value)).split('x')[1])
+            address = self.addresses[key]
 
+            command = template.format(**locals())
+
+            print 'Sending', command[:-1], 'for', key, value
+            self.send_command(command, port=self.port)
+            print 'command sent'
 
 
 class CISCamera(Camera):

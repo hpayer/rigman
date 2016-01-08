@@ -60,12 +60,6 @@ camera = IMICamera()
 #----------------------------------------------------------------------------#
 
 
-def send_command(command='', port='', camera_id='all'):
-    ser = serial.Serial(port=port)
-    result = ser.write(command)
-    # print result
-    ser.close()
-
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
