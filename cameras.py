@@ -208,29 +208,37 @@ class IMICamera(Camera):
 
     def all_cameras(self):
         self.bus.mv_all()
-        time.sleep(self.delay)
+        time.sleep(0.1)
         self.bus.mv_idle()
+	time.sleep(0.1)
         print 'All cameras done'
 
     def next_camera(self):
         self.bus.mv_step()
-        time.sleep(self.delay)
+        time.sleep(0.1)
         self.bus.mv_idle()
+	time.sleep(0.1)
         print 'Next camera done'
 
     def flash_and_beep(self):
         print 'closing contact'
-        self.bus.cl_off()
-        time.sleep(self.delay)
-        print 'openning contact'
         self.bus.cl_on()
+        time.sleep(0.1)
+        print 'openning contact'
+        self.bus.cl_off()
         print 'done'
 
-    def record_toggle(self):
-        print 'recording'
+    def record_start(self):
+        print 'start recording'
         self.bus.rec_on()
-        time.sleep(self.delay)
+        time.sleep(1)
         self.bus.rec_off()
+
+    def record_stop(self):
+    	print 'stop recording'
+	self.bus.rec_on()
+	time.sleep(4)
+	slef.bus.rec_off()	
 
     @staticmethod
     def send_command(command='', port='',):
@@ -262,7 +270,7 @@ class IMICamera(Camera):
                     command = "#ISPW2={camera_id}{address}{data}".format(
                         camera_id=camera_id,
                         address=addresses[key],
-                        data=value
+                        data='%02d'%int(value)
                     )
 
                     print 'Sending', command, 'from', key, value
