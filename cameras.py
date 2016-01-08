@@ -246,11 +246,28 @@ class IMICamera(Camera):
         print self.data
         camera_id = self.data.pop('camera_selection-camera_config') # 'All', '1', '2'
         print camera_id
+        addresses = dict(
+            white_balance_mode='E200',
+            manual_blue_gain='E201',
+            manual_red_gain='E202',
+        )
+
         if camera_id != 'All':
             camera_id = '%02d' % int(camera_id)
             for key, value in self.data.items():
-                print key, value
-            command = "#ISPW2=%s"%(camera_id)
+                # print key, value
+                key = key.split('-')[-1]
+                if key in addresses:
+                    # command = "#ISPW2=%s"%(camera_id)
+                    command = "#ISPW2={camera_id}{address}{data}".format(
+                        camera_id=camera_id,
+                        address=addresses[key],
+                        data=value
+                    )
+
+                    print 'Sending', command, 'from', key, value
+                    self.send_command(command, port=self.port)
+                    print 'command sent'
 
 
 
