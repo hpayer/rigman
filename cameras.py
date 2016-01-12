@@ -1,3 +1,5 @@
+import os
+import json
 import serial
 import time
 from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectField, FormField, SubmitField
@@ -8,55 +10,57 @@ from forms import ToggleField, IntegerRangeWithNumberField, CommandButtonField
 from rig_io import Rig_io
 
 
+
+
+def get_config_names():
+    configs = [path for path in os.listdir(CONFIGS_LOCATION) if os.path.splitext(path)[-1] == '.json']
+    return [os.path.splitext(config)[0] for config in configs]
+
+
 class CameraCommandButtonForm(Form):
     push_config = CommandButtonField(
-        # 'Save',
-        icon='glyphicon glyphicon-send',
+        'Push',
+        # icon='glyphicon glyphicon-send',
         command='push',
         # title='Push current config',
         message='Do you want to send config?'
     )
 
     open_config = CommandButtonField(
-        # 'Open',
-        icon='glyphicon glyphicon-floppy-open',
+        'Open',
+        # icon='glyphicon glyphicon-floppy-open',
         command='open',
         # title='Open current config',
         message='Do you want to open file?'
     )
 
     save_config = CommandButtonField(
-        # 'Save',
-        icon='glyphicon glyphicon-floppy-save',
+        'Save',
+        # icon='glyphicon glyphicon-floppy-save',
         command='save',
         # title='Save current config',
         message='Do you want to overwrite file?'
     )
 
     remove_config = CommandButtonField(
-        # 'Save',
-        icon='glyphicon glyphicon-floppy-remove',
+        'Delete',
+        # icon='glyphicon glyphicon-floppy-remove',
         command='remove',
         # title='Remove current config',
         message='Do you want to remove config?'
     )
 
 
+
 class CameraConfigForm(Form):
     camera_config = SelectField(
         "Config",
-        choices=[('exterior', 'Exterior'), ('test', 'Test'), ]
+        choices=[('exterior', 'Exterior'), ('test', 'Test'), ('default', 'Default')]
     )
     config_command = FormField(CameraCommandButtonForm, label='Commands')
 
 
 class CameraSelectionForm(Form):
-    ids = [('All', 'all')]
-    ids.extend([(id, id) for id in xrange(0, 256)])
-    # camera_config = SelectField(
-    #     "Camera",
-    #     choices=ids
-    # )
     camera_id = IntegerRangeWithNumberField(
         "Camera (-1=All)",
         validators=[
@@ -184,21 +188,23 @@ class IMIRemoteForm(Form):
 
 
 class Camera(object):
+    CONFIGS_LOCATION = os.path.abspath('./camera_configs')
 
     @property
     def port(self):
         raise NotImplemented('not impllemented')
 
-    # def execute(self, command, camera_id='all'):
-    #     ser = serial.Serial(self.port)
-    #     result = ser.write(self.commands[command])
-    #     ser.close()
-
-    # def execute(self, command, camera_id='all'):
-        # print 'execute:', command, camera_id
-
     def execute(self, data):
         getattr(self, data.pop('command'))(data)
+
+    @property
+    def configs(self):
+        configs = [path for path in os.listdir(self.CONFIGS_LOCATION) if os.path.splitext(path)[-1] == '.json']
+        return [os.path.splitext(config)[0] for config in configs]
+
+    @property
+    def config_choices(self):
+        return [(config, config.title()) for config in self.configs]
 
 
 class IMICamera(Camera):
@@ -234,6 +240,7 @@ class IMICamera(Camera):
         self.bus_methods =[
             method for method in dir(self.bus) if callable(getattr(self.bus, method)) and method != "__init__"
         ]
+        self.data = None
 
     def execute(self, data):
         command = data.pop('command')
@@ -326,34 +333,23 @@ class IMICamera(Camera):
     def open(self):
         camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
         camera_config_name = self.data.pop('camera_config-camera_config')
+        json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
+        with open(json_file, 'r') as f:
+            config = json.loads(f.read())
 
-        config = {
-            'exposure-dc_indoor_shut_mode': 0,
-            'exposure-dc_lens_mode': 0,
-            'hue-hue_gain_b': 100,
-            'hue-hue_gain_g': 160,
-            'hue-hue_gain_r': 200,
-            'white_balance-manual_blue_gain': 30,
-            'white_balance-manual_red_gain': 60,
-            'white_balance-white_balance_mode': 5,
-        }
         return config
 
-        # template = "#ISPW={address}{data}\r"
-        # if camera_id != 'All':
-        #     template = "#ISPW2={camera_id}{address}{data}\r"
-        #
-        # for key, value in self.data.items():
-        #     if key.endswith('_number'):
-        #         continue
-        #     data = '%02d' % int(hex(int(value)).split('x')[1])
-        #     address = self.addresses[key]
-        #
-        #     command = template.format(**locals())
-        #
-        #     print 'Sending', command[:-1], 'for', key, value
-        #     self.send_command(command, port=self.port)
-        #     print 'command sent'
+    def save(self):
+        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        camera_config_name = self.data.pop('camera_config-camera_config')
+        json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
+        json_content = json.dumps(self.data, sort_keys=True, indent=4)
+
+        print json_file
+        print json_content
+
+        with open(json_file, 'w') as f:
+            f.write(json_content)
 
 
 class CISCamera(Camera):

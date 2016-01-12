@@ -86,7 +86,7 @@ class ToggleField(BooleanField):
 class CommandButtonWidget(object):
 
     html = """
-    <button type="button" class="btn btn-default btn-mxlarge {icon}" data-toggle="modal" role="dialog" data-target="#{command}"></button>
+    <button type="button" class="btn btn-default btn-lg2 {icon}" data-toggle="modal" role="dialog" data-target="#{command}">{label}</button>
 
     <div class="modal fade" id="{command}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
       <div class="modal-dialog" role="document">
@@ -120,7 +120,10 @@ class CommandButtonWidget(object):
         if 'value' not in kwargs:
             kwargs['value'] = field._value()
         return HTMLString(self.html.format(
-                icon=field.icon, command=field.command, message=field.message
+                icon=field.icon,
+                command=field.command,
+                message=field.message,
+                label=field.label,
         ))  # , title=field.title))
 
 
@@ -130,7 +133,10 @@ class CommandButtonField(BooleanField):
     def __init__(self, label=None, validators=None, false_values=None, icon='', command='', title='', message='',
                  **kwargs):
         super(CommandButtonField, self).__init__(label, validators, **kwargs)
+
         self.icon = icon
+        # if not self.icon:
+        #     self.
         self.command = command
         self.title = title
         self.message = message

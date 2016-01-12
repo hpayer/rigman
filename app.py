@@ -149,7 +149,8 @@ def get_formfield(form_classes):
 @app.route('/registers',  methods=['POST', 'GET'])
 def registers():
     form = camera.pages['registers']
-    return render_template('pages/registers.html', form=form)
+    form.camera_config.form.camera_config.choices = camera.config_choices
+    return render_template('pages/registers.html', form=camera.pages['registers'])
 
 @app.route('/config')
 def config():

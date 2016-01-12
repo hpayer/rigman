@@ -19,6 +19,17 @@
     }
 
 
+.btn-lg2 {
+    padding: 18px 28px;
+    font-size: 16px;
+    margin: 5px;
+    line-height: normal;
+    -webkit-border-radius: 8px;
+       -moz-border-radius: 8px;
+            border-radius: 8px;
+    }
+
+
 input[type=range] {
   width: 100%;
 }

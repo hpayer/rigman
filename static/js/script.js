@@ -18,13 +18,12 @@ function command_click(button){
                 console.log(response);
                 $.each(response, function(field_name, value){
                     var field  = document.getElementsByName(field_name)[0];
-                    var field_number  = document.getElementsByName(field_name + "_number")[0];
                     field.value = value;
-                    if (field_number) {
-                        field_number.value = value
-                        }
                     }
                 )
+            }
+            if (command == 'save'){
+                console.log('save')
             }
 
         },
