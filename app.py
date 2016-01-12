@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import os
-from flask import Flask, render_template, request, json, redirect, url_for
+from flask import Flask, render_template, request, json, redirect, url_for, json
 # from flask.ext.sqlalchemy import SQLAlchemy
 from flask_wtf import Form
 import logging
@@ -81,10 +81,24 @@ def home():
 
 @app.route('/command', methods=['POST'])
 def command(cmd=None):
-    data = dict([(kv.split('=')) for kv in request.form['form'].split('&')])
-    data.update(dict(command=request.form['command']))
+    form = request.form
+    data = dict([(kv.split('=')) for kv in form['form'].split('&')])
+
+    command=form['command']
+    data.update(dict(command=command))
+    # if command in ['push', 'open', 'save', 'remove']:
+    #
+    #     answer = False
+    #     # answer = dialog()
+    #     if not answer:
+    #         return json.dumps({'status':'OK'})
+
     # print 'command:', data
-    camera.execute(data)
+    results = camera.execute(data)
+    if results:
+        print results
+        return json.dumps(results)
+
     return json.dumps({'status':'OK'})
 
 
@@ -97,7 +111,7 @@ def remote():
             command = request.form['command']
             camera_id = request.form['camera_id']
             # port = request.form['port']
-            camera.execute(command)
+            results = camera.execute(command)
 
     return render_template('pages/remote.html', form=form, commands=AVAILABLE_COMMANDS)
 

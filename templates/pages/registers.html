@@ -5,13 +5,6 @@
 <div class="page-header">
   <h1><span class="glyphicon glyphicon-cog"></span> Registers</h1>
 </div>
-<!--control buttons-->
-
-<div style="vertical-align:middle;text-align:center;">
-<button type="button" name="command" class="btn btn-default btn-xlarge " value="push_config" onClick="command_click(this)">Push
-</button>
-</div>​
-
 
 <!--forms-->
 
@@ -22,14 +15,23 @@
             <div>{{ formfield.label (class_="form-control")}}</div>
             {% for field in formfield if field.label != 'Csrf Token'%}
                 <div class="col-xs-6">
-                    {% if field.name != 'csrf_token' %}
-                        {{ field.label }}
+                    {% if field.type not in ['CommandButtonField'] %}
+                        {% if field.name != 'csrf_token' %}
+                            {{ field.label }}
+                        {% endif %}
                     {% endif %}
-                </div>
+                    </div>
+                    <!--{% print field.type %}-->
+                    <!--{% print field.type == 'FormField' %}-->
                     {% if field.type in ['FormField'] %}
-                        <div class="col-xs-4" >{{ field.slider }}</div>
-                        <div class="col-xs-1" >{{ field.number }}</div>
-
+                        <!--{% print field.form_class.__name__ %}-->
+                        {% if field.form_class.__name__ in ['CameraCommandButtonForm'] %}
+                            <div class="col-xs-6">
+                           {% for button in field %}
+                                {{ button }}
+                            {% endfor %}
+                                </div>
+                        {% endif %}
                     {% elif field.type in ['ToggleField'] %}
                         <div class="col-xs-6">{{ field }}</div>
 
@@ -37,8 +39,15 @@
                         {{ field }}
                     {% elif field.type in ['IntegerRangeField'] %}
                         {{ field }}
-                   {% elif field.type in ['IntegerRangeField'] %}
-                        {{ field }}
+                   {% elif field.type in ['FormField'] %}
+                        <div class="col-xs-6">
+                        {% print 'hello' %}
+                        {% print field[0] %}
+                        {% for button in field %}
+
+                            {{ button.name }}
+                        {% endfor %}
+                            </div>
                     {% else %}
                         <div class="col-xs-6">{{ field (class_="form-control")}}</div>
                     {% endif %}

@@ -4,8 +4,42 @@ from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectF
 from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms import validators
 from wtforms import Form
-from forms import ToggleField, IntegerRangeWithNumberField
+from forms import ToggleField, IntegerRangeWithNumberField, CommandButtonField
 from rig_io import Rig_io
+
+
+class CameraCommandButtonForm(Form):
+    push_config = CommandButtonField(
+        # 'Save',
+        icon='glyphicon glyphicon-send',
+        command='push',
+        # title='Push current config',
+        message='Do you want to send config?'
+    )
+
+    open_config = CommandButtonField(
+        # 'Open',
+        icon='glyphicon glyphicon-floppy-open',
+        command='open',
+        # title='Open current config',
+        message='Do you want to open file?'
+    )
+
+    save_config = CommandButtonField(
+        # 'Save',
+        icon='glyphicon glyphicon-floppy-save',
+        command='save',
+        # title='Save current config',
+        message='Do you want to overwrite file?'
+    )
+
+    remove_config = CommandButtonField(
+        # 'Save',
+        icon='glyphicon glyphicon-floppy-remove',
+        command='remove',
+        # title='Remove current config',
+        message='Do you want to remove config?'
+    )
 
 
 class CameraConfigForm(Form):
@@ -13,9 +47,7 @@ class CameraConfigForm(Form):
         "Config",
         choices=[('exterior', 'Exterior'), ('test', 'Test'), ]
     )
-    save_config = SubmitField(
-        'Save',
-    )
+    config_command = FormField(CameraCommandButtonForm, label='Commands')
 
 
 class CameraSelectionForm(Form):
@@ -129,8 +161,8 @@ class IMIExposureForm(Form):
 
 
 class IMIRegistersForm(Form):
-    # camera_config = FormField(CameraConfigForm, label="Config")
     camera_selection = FormField(CameraSelectionForm, label="Selection")
+    camera_config = FormField(CameraConfigForm, label="Config")
     white_balance = FormField(IMIWhiteBalanceForm, label="White Balance")
     exposure = FormField(IMIExposureForm, label="Exposure")
     hue = FormField(IMIHueForm, label='Hue')
@@ -170,9 +202,9 @@ class Camera(object):
 
 
 class IMICamera(Camera):
-    delay = 1
-
+    type_name = "IMI"
     port = '/dev/ttyUSB0'
+    delay = 1
     pages = dict(
         registers=IMIRegistersForm(),
         remote=IMIRemoteForm()
@@ -216,7 +248,7 @@ class IMICamera(Camera):
 
         local_command = getattr(self, command, None)
         if local_command:
-            local_command()
+            return local_command()
 
         # see if bus has command
         elif command in self.bus_methods:
@@ -272,8 +304,9 @@ class IMICamera(Camera):
             # print 'Serial device %s not found'%port
             pass
 
-    def push_config(self):
+    def push(self):
         camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        camera_config_name = self.data.pop('camera_config-camera_config')
         template = "#ISPW={address}{data}\r"
         if camera_id != 'All':
             template = "#ISPW2={camera_id}{address}{data}\r"
@@ -289,6 +322,38 @@ class IMICamera(Camera):
             print 'Sending', command[:-1], 'for', key, value
             self.send_command(command, port=self.port)
             print 'command sent'
+
+    def open(self):
+        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        camera_config_name = self.data.pop('camera_config-camera_config')
+
+        config = {
+            'exposure-dc_indoor_shut_mode': 0,
+            'exposure-dc_lens_mode': 0,
+            'hue-hue_gain_b': 100,
+            'hue-hue_gain_g': 160,
+            'hue-hue_gain_r': 200,
+            'white_balance-manual_blue_gain': 30,
+            'white_balance-manual_red_gain': 60,
+            'white_balance-white_balance_mode': 5,
+        }
+        return config
+
+        # template = "#ISPW={address}{data}\r"
+        # if camera_id != 'All':
+        #     template = "#ISPW2={camera_id}{address}{data}\r"
+        #
+        # for key, value in self.data.items():
+        #     if key.endswith('_number'):
+        #         continue
+        #     data = '%02d' % int(hex(int(value)).split('x')[1])
+        #     address = self.addresses[key]
+        #
+        #     command = template.format(**locals())
+        #
+        #     print 'Sending', command[:-1], 'for', key, value
+        #     self.send_command(command, port=self.port)
+        #     print 'command sent'
 
 
 class CISCamera(Camera):

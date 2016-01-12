@@ -42,11 +42,18 @@ class Rig_io():
         self.device_reg_data |= (0x1 << 1)
         bus.write_byte_data(self.device_address, self.device_reg_mode1, self.device_reg_data)
 
-    def mv_step(self):
+    def mv_all(self):
+        """Switch with mv_step, was inversed with mv_all.
+        """
+    # def mv_step(self):
         self.device_reg_data &= ~(0x1 << 2)
         bus.write_byte_data(self.device_address, self.device_reg_mode1, self.device_reg_data)
 
-    def mv_all(self):
+    def mv_step(self):
+        """
+        Switch with mv_all, was inversed with mv_step.
+        """
+    # def mv_all(self):
         self.device_reg_data &= ~(0x1 << 3)
         bus.write_byte_data(self.device_address, self.device_reg_mode1, self.device_reg_data)
 
