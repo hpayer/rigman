@@ -329,6 +329,8 @@ class IMICamera(Camera):
     def push(self):
         camera_id = self.data.pop('camera_selection-camera_id')
         camera_config_name = self.data.pop('camera_config-camera_config')
+        self.data.pop('config_name')
+
         template = "#ISPW={address}{data}\r"
         if camera_id != '-1':
             template = "#ISPW2={camera_id}{address}{data}\r"
@@ -336,14 +338,20 @@ class IMICamera(Camera):
         for key, value in self.data.items():
             if key.endswith('_number'):
                 continue
-            data = '%02d' % int(hex(int(value)).split('x')[1])
-            address = self.addresses[key]
 
-            command = template.format(**locals())
+            try:
+                data = '%02d' % int(hex(int(value)).split('x')[1])
 
-            print 'Sending', command[:-1], 'for', key, value
-            self.send_command(command, port=self.port)
-            print 'command sent'
+                address = self.addresses[key]
+
+                command = template.format(**locals())
+
+                print 'Sending', command[:-1], 'for', key, value
+                self.send_command(command, port=self.port)
+                print 'command sent'
+            except:
+                print 'Error:', key, value
+
 
     def open(self):
         camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
