@@ -1,20 +1,16 @@
 import os
 import json
 import serial
+import shutil
 import time
 from wtforms import BooleanField, IntegerField, FloatField, StringField, SelectField, FormField, SubmitField
 from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms import validators
 from wtforms import Form
-from forms import ToggleField, IntegerRangeWithNumberField, CommandButtonField
+from forms import ToggleField, IntegerRangeWithNumberField, CommandButtonField, CommandButtonFieldWithInputDialog
+from forms import CommandButtonFieldWithDeleteWarningDialog
 from rig_io import Rig_io
 
-
-
-
-def get_config_names():
-    configs = [path for path in os.listdir(CONFIGS_LOCATION) if os.path.splitext(path)[-1] == '.json']
-    return [os.path.splitext(config)[0] for config in configs]
 
 
 class CameraCommandButtonForm(Form):
@@ -23,7 +19,7 @@ class CameraCommandButtonForm(Form):
         # icon='glyphicon glyphicon-send',
         command='push',
         # title='Push current config',
-        message='Do you want to send config?'
+        message='Do you want to push the selected config?'
     )
 
     open_config = CommandButtonField(
@@ -31,23 +27,23 @@ class CameraCommandButtonForm(Form):
         # icon='glyphicon glyphicon-floppy-open',
         command='open',
         # title='Open current config',
-        message='Do you want to open file?'
+        message='Do you want to open the selected config?'
     )
 
-    save_config = CommandButtonField(
+    save_config = CommandButtonFieldWithInputDialog(
         'Save',
         # icon='glyphicon glyphicon-floppy-save',
         command='save',
         # title='Save current config',
-        message='Do you want to overwrite file?'
+        message='Please confirm or rename the configuration.'
     )
 
-    remove_config = CommandButtonField(
+    delete_config = CommandButtonFieldWithDeleteWarningDialog(
         'Delete',
         # icon='glyphicon glyphicon-floppy-remove',
-        command='remove',
+        command='delete',
         # title='Remove current config',
-        message='Do you want to remove config?'
+        message='Do you want to delete the selected config?'
     )
 
 
@@ -55,7 +51,7 @@ class CameraCommandButtonForm(Form):
 class CameraConfigForm(Form):
     camera_config = SelectField(
         "Config",
-        choices=[('exterior', 'Exterior'), ('test', 'Test'), ('default', 'Default')]
+        choices=[('default', 'Default')],
     )
     config_command = FormField(CameraCommandButtonForm, label='Commands')
 
@@ -189,6 +185,7 @@ class IMIRemoteForm(Form):
 
 class Camera(object):
     CONFIGS_LOCATION = os.path.abspath('./camera_configs')
+    DELETED_CONFIGS_LOCATION = os.path.join(CONFIGS_LOCATION, 'deleted')
 
     @property
     def port(self):
@@ -341,16 +338,66 @@ class IMICamera(Camera):
 
     def save(self):
         camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
-        camera_config_name = self.data.pop('camera_config-camera_config')
+        camera_config_name = self.data.pop('config_name')
         json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
         json_content = json.dumps(self.data, sort_keys=True, indent=4)
 
-        print json_file
-        print json_content
+        results = {}
+        try:
+            with open(json_file, 'w') as f:
+                f.write(json_content)
+            results.update(
+                dict(
+                    message='%s saved.'% camera_config_name.title(),
+                    category='success',
+                    success=1
+                )
+            )
+        except Exception as e:
+            results.update(
+                dict(
+                    category='danger',
+                    message=e.message,
+                )
+            )
 
-        with open(json_file, 'w') as f:
-            f.write(json_content)
+        return results
 
+    def delete(self):
+        camera_config_name = self.data.pop('camera_config-camera_config')
+        results = {}
+
+        if camera_config_name != 'default':
+            json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
+            try:
+                if not os.path.exists(self.DELETED_CONFIGS_LOCATION):
+                    os.makedirs(self.DELETED_CONFIGS_LOCATION)
+
+                if os.path.exists(json_file):
+                    shutil.move(json_file, self.DELETED_CONFIGS_LOCATION)
+
+                results.update(
+                    dict(
+                        message='%s deleted.'% camera_config_name,
+                        category='success',
+                        success=1
+                    )
+                )
+            except Exception as e:
+                results.update(
+                    dict(
+                        category='danger',
+                        message=e.message,
+                    )
+                )
+        else:
+            results.update(
+                dict(
+                    category='danger',
+                    message='Cannot delete default config!'
+                )
+            )
+        return results
 
 class CISCamera(Camera):
     pass

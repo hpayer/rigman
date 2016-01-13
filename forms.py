@@ -7,6 +7,69 @@ from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms.widgets import HTMLString, html_params
 
 
+CANCEL_OK_DIALOG_TEMPLATE = """
+    <div class="modal fade" id="{command}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Rigman</h4>
+          </div>
+          <div class="modal-body">
+            <h4>{message}</h4>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" name="command" class="btn btn-default btn-primary" data-dismiss="modal" value="{command}" onClick="command_click(this)">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+"""
+
+INPUT_DIALOG_TEMPLATE = """
+    <div class="modal fade" id="{command}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Rigman</h4>
+          </div>
+          <div class="modal-body">
+            <h4 >{message}</h4>
+            <p><input type="text" class="span3" name="config_name" id="config_name" placeholder="{config_name}"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" name="command" class="btn btn-default btn-primary" data-dismiss="modal" value="{command}" onClick="command_click(this)">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+"""
+
+DELETE_DIALOG_TEMPLATE = """
+    <div class="modal fade" id="{command}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Rigman</h4>
+          </div>
+          <div class="modal-body">
+            <h4>{message} </h4>
+            <h4 name="config_name" id="delete_config_name"></h4>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" name="command" class="btn btn-default btn-primary" data-dismiss="modal" value="{command}" onClick="command_click(this)">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+"""
+
+
 # Set your classes here.
 
 
@@ -83,47 +146,36 @@ class ToggleField(BooleanField):
     widget = ToggleWidget()
 
 
+
 class CommandButtonWidget(object):
 
     html = """
     <button type="button" class="btn btn-default btn-lg2 {icon}" data-toggle="modal" role="dialog" data-target="#{command}">{label}</button>
-
-    <div class="modal fade" id="{command}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="myModalLabel">Rigman</h4>
-          </div>
-          <div class="modal-body">
-            <h4>{message}</h4>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" name="command" class="btn btn-default btn-primary" data-dismiss="modal" value="{command}" onClick="command_click(this)">Ok</button>
-          </div>
-        </div>
-      </div>
-    </div>
     """
+    dialog_html = CANCEL_OK_DIALOG_TEMPLATE
+
     html_old = """
     <button type="button" name="command" class="btn btn-default btn-mxlarge {icon}" value="{command}" onClick="command_click(this)">
     </button>
     """
 
-    def __init__(self, input_type='button'):
+    def __init__(self, input_type='button', dialog_html=''):
         self.input_type = input_type
+        if dialog_html:
+            self.dialog_html = dialog_html
 
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('type', self.input_type)
         if 'value' not in kwargs:
             kwargs['value'] = field._value()
-        return HTMLString(self.html.format(
-                icon=field.icon,
-                command=field.command,
-                message=field.message,
-                label=field.label,
+
+        result_html = self.html + self.dialog_html
+        return HTMLString(result_html.format(**field.__dict__
+                # icon=field.icon,
+                # command=field.command,
+                # message=field.message,
+                # label=field.label,
         ))  # , title=field.title))
 
 
@@ -133,13 +185,19 @@ class CommandButtonField(BooleanField):
     def __init__(self, label=None, validators=None, false_values=None, icon='', command='', title='', message='',
                  **kwargs):
         super(CommandButtonField, self).__init__(label, validators, **kwargs)
-
         self.icon = icon
-        # if not self.icon:
-        #     self.
         self.command = command
         self.title = title
         self.message = message
+        self.config_name = ''
+
+class CommandButtonFieldWithInputDialog(CommandButtonField):
+    widget = CommandButtonWidget(dialog_html=INPUT_DIALOG_TEMPLATE)
+
+
+class CommandButtonFieldWithDeleteWarningDialog(CommandButtonField):
+    widget = CommandButtonWidget(dialog_html=DELETE_DIALOG_TEMPLATE)
+
 
 
 class RangeInputWithNumber(object):

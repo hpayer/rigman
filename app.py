@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import os
-from flask import Flask, render_template, request, json, redirect, url_for, json
+from flask import Flask, render_template, request, json, redirect, url_for, flash
 # from flask.ext.sqlalchemy import SQLAlchemy
 from flask_wtf import Form
 import logging
@@ -95,8 +95,16 @@ def command(cmd=None):
 
     # print 'command:', data
     results = camera.execute(data)
-    if results:
-        print results
+
+    if results and results.get('message'):
+        # boostrap alert types: success, info, warning, danger
+        flash(results['message'], category=results['category'])
+
+        # if command in ['open', 'save', 'delete', 'push']:
+        #     return redirect(url_for('registers'))
+        #     return render_template('pages/registers.html', form=camera.pages['registers'])
+
+    if command in ['open', 'save'] and results:
         return json.dumps(results)
 
     return json.dumps({'status':'OK'})
@@ -150,8 +158,10 @@ def get_formfield(form_classes):
 def registers():
     form = camera.pages['registers']
     form.camera_config.form.camera_config.choices = camera.config_choices
+    form.camera_config.form.config_command.form.save_config.config_name = camera.config_choices[0][1]
     return render_template('pages/registers.html', form=camera.pages['registers'])
 
+@app.route('/config')
 @app.route('/config')
 def config():
     parameters = []

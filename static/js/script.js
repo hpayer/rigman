@@ -44,3 +44,12 @@ function UpdateRangeSlider(value, id) {
     selector = id.replace("selected-", "");
     document.querySelector('#' + selector).value = value;
 }
+
+
+$("#camera_config-camera_config").change(function() {
+    var config_name = $(this).find(":selected").val();
+//    console.log(config_name)
+//    $("#config_name").attr("placeholder", config_name)
+    $("#config_name").attr("value", config_name)
+    $("#delete_config_name").attr("value", config_name)
+});
