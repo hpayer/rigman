@@ -327,13 +327,14 @@ class IMICamera(Camera):
             pass
 
     def push(self):
-        camera_id = self.data.pop('camera_selection-camera_id')
+        camera_id = int(self.data.pop('camera_selection-camera_id'))
         camera_config_name = self.data.pop('camera_config-camera_config')
         self.data.pop('config_name')
 
         template = "#ISPW={address}{data}\r"
-        if camera_id != '-1':
+        if camera_id != -1:
             template = "#ISPW2={camera_id}{address}{data}\r"
+            camera_id = '%02d' % camera_id
 
         for key, value in self.data.items():
             if key.endswith('_number'):
