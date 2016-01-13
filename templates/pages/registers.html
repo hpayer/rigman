@@ -14,7 +14,7 @@
         <div align="right" class="form-group">
             <div>{{ formfield.label (class_="form-control")}}</div>
             {% for field in formfield if field.label != 'Csrf Token'%}
-                <div class="col-xs-6">
+                <div class="col-xs-4">
                     {% if field.type not in ['CommandButtonField'] %}
                         {% if field.name != 'csrf_token' %}
                             {{ field.label }}
@@ -26,21 +26,21 @@
                     {% if field.type in ['FormField'] %}
                         <!--{% print field.form_class.__name__ %}-->
                         {% if field.form_class.__name__ in ['CameraCommandButtonForm'] %}
-                            <div class="col-xs-6">
+                            <div class="col-xs-8">
                            {% for button in field %}
                                 {{ button }}
                             {% endfor %}
                                 </div>
                         {% endif %}
                     {% elif field.type in ['ToggleField'] %}
-                        <div class="col-xs-6">{{ field }}</div>
+                        <div class="col-xs-8">{{ field }}</div>
 
                     {% elif field.type in ['IntegerRangeWithNumberField'] %}
                         {{ field }}
                     {% elif field.type in ['IntegerRangeField'] %}
                         {{ field }}
                    {% elif field.type in ['FormField'] %}
-                        <div class="col-xs-6">
+                        <div class="col-xs-8">
                         {% print 'hello' %}
                         {% print field[0] %}
                         {% for button in field %}
@@ -49,7 +49,7 @@
                         {% endfor %}
                             </div>
                     {% else %}
-                        <div class="col-xs-6">{{ field (class_="form-control")}}</div>
+                        <div class="col-xs-8">{{ field (class_="form-control")}}</div>
                     {% endif %}
                     <br></br>
 

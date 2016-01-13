@@ -2,7 +2,7 @@
 from flask_wtf import Form
 from wtforms import widgets
 from wtforms import TextField, PasswordField, SelectField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, Length
+from wtforms.validators import DataRequired, EqualTo, Length, NumberRange
 from wtforms.fields.html5 import DecimalRangeField, IntegerRangeField
 from wtforms.widgets import HTMLString, html_params
 
@@ -99,22 +99,6 @@ class ForgotForm(Form):
     email = TextField(
             'Email', validators=[DataRequired(), Length(min=6, max=40)]
     )
-
-
-class RemoteForm(Form):
-    port = SelectField(
-            label='Port:',
-            choices=[("COM%d" % port, "COM%d" % port) for port in xrange(0, 10)]
-    )
-
-    ids = [('All', 'all')]
-    ids.extend([(id, id) for id in xrange(1, 53)])
-
-    camera_id = SelectField(
-            label='Camera ID:',
-            choices=ids
-    )
-
 
 class MultiViewForm(Form):
     port = SelectField(
@@ -241,10 +225,37 @@ class RangeInputWithNumber(object):
 
         range_html = HTMLString('<input %s>' % self.html_params(**kwargs))
         number_html = HTMLString('<input %s>' % self.html_params(**number_kwargs))
-        return '<div class="col-xs-3">%s</div><div class="col-xs-3">%s</div>' % (number_html, range_html)
+        return '<div class="col-xs-4">%s</div><div class="col-xs-4">%s</div>' % (number_html, range_html)
 
 
 class IntegerRangeWithNumberField(IntegerRangeField):
     def __init__(self, label=None, validators=None, minimum=1, maximum=100, **kwargs):
         self.widget = RangeInputWithNumber(step=1, minimum=minimum, maximum=maximum)
         super(IntegerRangeWithNumberField, self).__init__(label, validators, **kwargs)
+
+
+class RemoteForm(Form):
+    port = SelectField(
+            label='Port:',
+            choices=[("COM%d" % port, "COM%d" % port) for port in xrange(0, 10)]
+    )
+
+    # ids = [('All', 'all')]
+    # ids.extend([(id, id) for id in xrange(1, 53)])
+    #
+    # camera_id = SelectField(
+    #         label='Camera ID:',
+    #         choices=ids
+    # )
+    #
+
+    camera_id = IntegerRangeWithNumberField(
+        "Camera (-1=All)",
+        validators=[
+            DataRequired(),
+            NumberRange(min=-1, max=255, message='min:%(min)s max%(max)s')
+        ],
+        minimum=-1,
+        maximum=255,
+        default=-1
+    )

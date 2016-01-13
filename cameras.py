@@ -169,9 +169,19 @@ class IMIRegistersForm(Form):
 
 
 class IMIRemote(Form):
-    camera_id = SelectField(
-        "Camera ID",
-        choices=[(c, c) for c in ['all', 1, 2, 3, 4, 5, 6]],
+    # camera_id = SelectField(
+    #     "Camera ID",
+    #     choices=[(c, c) for c in ['all', 1, 2, 3, 4, 5, 6]],
+    # )
+    camera_id = IntegerRangeWithNumberField(
+        "Camera (-1=All)",
+        validators=[
+            validators.DataRequired(),
+            validators.NumberRange(min=-1, max=255, message='min:%(min)s max%(max)s')
+        ],
+        minimum=-1,
+        maximum=255,
+        default=-1
     )
     port = SelectField(
         "Port",
@@ -219,7 +229,6 @@ class IMICamera(Camera):
             right='04',
             enter='00',
         )
-    control_commands = dict([(key, '#OKC=%s\r' % value) for key, value in _control_commands.iteritems()])
 
     addresses = {
         'exposure-dc_indoor_shut_mode': 'E108',
@@ -239,13 +248,22 @@ class IMICamera(Camera):
         ]
         self.data = None
 
+    @property
+    def control_commands(self):
+        camera_id = self.data.get('camera_id', '-1')
+        template = '#OKC={value}\r'
+        if camera_id != '-1':
+            template = '#OKC2={camera_id}{value}\r'
+
+        return dict([(key, template.format(**locals())) for key, value in self._control_commands.iteritems()])
+
     def execute(self, data):
         command = data.pop('command')
         self.data = data
         print 'executing:', command
 
         if command in self._control_commands:
-            camera_id =  data.get('camera_id', 'All')
+
             self.send_command(self.control_commands[command], port=self.port)
             print command, 'executed'
             return
@@ -309,10 +327,10 @@ class IMICamera(Camera):
             pass
 
     def push(self):
-        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        camera_id = self.data.pop('camera_selection-camera_id')
         camera_config_name = self.data.pop('camera_config-camera_config')
         template = "#ISPW={address}{data}\r"
-        if camera_id != 'All':
+        if camera_id != '-1':
             template = "#ISPW2={camera_id}{address}{data}\r"
 
         for key, value in self.data.items():
