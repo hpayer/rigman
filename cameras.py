@@ -317,6 +317,10 @@ class IMICamera(Camera):
         time.sleep(4)
         self.bus.rec_off()
 
+    def all_off(self):
+        print 'all off'
+        self.bus.alloff()
+
     def send_command(self, command='', port='',):
         try:
             ser = serial.Serial(port=self.port)

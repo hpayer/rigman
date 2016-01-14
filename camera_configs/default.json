@@ -1,6 +1,5 @@
 {
-    "camera_selection-camera_id_number": "-1", 
-    "exposure-dc_indoor_shut_mode": "0", 
+    "exposure-dc_indoor_shut_mode": "0",
     "exposure-dc_lens_mode": "0", 
     "hue-hue_gain_b": "128", 
     "hue-hue_gain_b_number": "128", 
