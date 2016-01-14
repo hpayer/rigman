@@ -188,7 +188,8 @@ class IMIAGCLimitAndBrightness(Form):
             (0xD, 'AGC 221 Limit(36.4db))'),
             (0xE, 'AGC 238 Limit(39.2db))'),
             (0xF, 'AGC 255 Limit(42 db))'),
-        ]
+        ],
+        default=0xF
     )
     brightness = IntegerRangeWithNumberField(
         "Brightness",
@@ -396,7 +397,7 @@ class IMICamera(Camera):
                 continue
 
             try:
-                data = '%02d' % int(hex(int(value)).split('x')[1])
+                data = str(value).zfill(2)
 
                 address = self.addresses[key]
 
