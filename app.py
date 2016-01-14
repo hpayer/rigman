@@ -86,25 +86,18 @@ def command(cmd=None):
 
     command=form['command']
     data.update(dict(command=command))
-    # if command in ['push', 'open', 'save', 'remove']:
-    #
-    #     answer = False
-    #     # answer = dialog()
-    #     if not answer:
-    #         return json.dumps({'status':'OK'})
 
-    # print 'command:', data
     results = camera.execute(data)
 
     if results and results.get('message'):
         # boostrap alert types: success, info, warning, danger
         flash(results['message'], category=results['category'])
 
-        # if command in ['open', 'save', 'delete', 'push']:
-        #     return redirect(url_for('registers'))
-        #     return render_template('pages/registers.html', form=camera.pages['registers'])
-
     if command in ['open', 'save'] and results:
+        return json.dumps(results)
+
+    if command in ['delete'] and results:
+        camera.current_config_name = camera.config_choices[0][1]
         return json.dumps(results)
 
     return json.dumps({'status':'OK'})
@@ -158,7 +151,6 @@ def get_formfield(form_classes):
 def registers():
     form = camera.pages['registers']
     form.camera_config.form.camera_config.choices = camera.config_choices
-    form.camera_config.form.camera_config.default = camera.current_config_name
     form.camera_config.form.camera_config.data = camera.current_config_name
     form.camera_config.form.config_command.form.save_config.config_name = camera.config_choices[0][1]
     return render_template('pages/registers.html', form=camera.pages['registers'])

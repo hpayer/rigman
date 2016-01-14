@@ -365,6 +365,8 @@ class IMICamera(Camera):
 
     def save(self):
         self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        self.data.pop('camera_selection-camera_id_number')
+        self.data.pop('camera_config-camera_config')
         camera_config_name = self.data.pop('config_name')
         json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
         json_content = json.dumps(self.data, sort_keys=True, indent=4)
@@ -387,7 +389,7 @@ class IMICamera(Camera):
                     message=e.message,
                 )
             )
-
+        self.current_config_name = camera_config_name
         return results
 
     def delete(self):
@@ -396,11 +398,16 @@ class IMICamera(Camera):
 
         if camera_config_name != 'default':
             json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
+            deleted_json_file = '%s/%s.json' % (self.DELETED_CONFIGS_LOCATION, camera_config_name)
+            print deleted_json_file
+
             try:
                 if not os.path.exists(self.DELETED_CONFIGS_LOCATION):
                     os.makedirs(self.DELETED_CONFIGS_LOCATION)
 
                 if os.path.exists(json_file):
+                    if os.path.exists(deleted_json_file):
+                        os.remove(deleted_json_file)
                     shutil.move(json_file, self.DELETED_CONFIGS_LOCATION)
 
                 results.update(
@@ -410,6 +417,7 @@ class IMICamera(Camera):
                         success=1
                     )
                 )
+                self.current_config_name = 'default'
             except Exception as e:
                 results.update(
                     dict(
