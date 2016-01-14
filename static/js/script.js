@@ -49,7 +49,28 @@ function UpdateRangeSlider(value, id) {
 $("#camera_config-camera_config").change(function() {
     var config_name = $(this).find(":selected").val();
 //    console.log(config_name)
-//    $("#config_name").attr("placeholder", config_name)
     $("#config_name").attr("value", config_name)
     $("#delete_config_name").attr("value", config_name)
+
+    // automatically open config after select changes
+    $.ajax({
+        url: '/command',
+        data: {form:$('form').serialize(), command: 'open'},
+        type: 'POST',
+        command: 'open',
+        success: function(response){
+            var command = 'open'
+                response = JSON.parse(response);
+//                console.log(response);
+                $.each(response, function(field_name, value){
+                    var field  = document.getElementsByName(field_name)[0];
+                    field.value = value;
+                    }
+                )
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+
 });

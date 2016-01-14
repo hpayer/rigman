@@ -158,6 +158,8 @@ def get_formfield(form_classes):
 def registers():
     form = camera.pages['registers']
     form.camera_config.form.camera_config.choices = camera.config_choices
+    form.camera_config.form.camera_config.default = camera.current_config_name
+    form.camera_config.form.camera_config.data = camera.current_config_name
     form.camera_config.form.config_command.form.save_config.config_name = camera.config_choices[0][1]
     return render_template('pages/registers.html', form=camera.pages['registers'])
 

@@ -12,7 +12,6 @@ from forms import CommandButtonFieldWithDeleteWarningDialog
 from rig_io import Rig_io
 
 
-
 class CameraCommandButtonForm(Form):
     push_config = CommandButtonField(
         'Push',
@@ -22,13 +21,13 @@ class CameraCommandButtonForm(Form):
         message='Do you want to push the selected config?'
     )
 
-    open_config = CommandButtonField(
-        'Open',
-        # icon='glyphicon glyphicon-floppy-open',
-        command='open',
-        # title='Open current config',
-        message='Do you want to open the selected config?'
-    )
+    # open_config = CommandButtonField(
+    #     'Open',
+    #     # icon='glyphicon glyphicon-floppy-open',
+    #     command='open',
+    #     # title='Open current config',
+    #     message='Do you want to open the selected config?'
+    # )
 
     save_config = CommandButtonFieldWithInputDialog(
         'Save',
@@ -45,7 +44,6 @@ class CameraCommandButtonForm(Form):
         # title='Remove current config',
         message='Do you want to delete the selected config?'
     )
-
 
 
 class CameraConfigForm(Form):
@@ -241,12 +239,15 @@ class IMICamera(Camera):
         'white_balance-white_balance_mode': 'E200',
     }
 
+
     def __init__(self):
         self.bus = Rig_io()
         self.bus_methods =[
             method for method in dir(self.bus) if callable(getattr(self.bus, method)) and method != "__init__"
         ]
         self.data = None
+        self.current_config_name = 'default'
+        self.current_config = {}
 
     @property
     def control_commands(self):
@@ -260,7 +261,7 @@ class IMICamera(Camera):
     def execute(self, data):
         command = data.pop('command')
         self.data = data
-        print 'executing:', command
+        # print 'executing:', command
 
         if command in self._control_commands:
 
@@ -279,7 +280,7 @@ class IMICamera(Camera):
             print command, 'not found'
             return
 
-        print command, 'executed'
+        # print command, 'executed'
         return
 
     def all_cameras(self):
@@ -353,18 +354,17 @@ class IMICamera(Camera):
             except:
                 print 'Error:', key, value
 
-
     def open(self):
-        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
         camera_config_name = self.data.pop('camera_config-camera_config')
         json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
         with open(json_file, 'r') as f:
             config = json.loads(f.read())
-
+        self.current_config_name = camera_config_name
         return config
 
     def save(self):
-        camera_id = self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
+        self.data.pop('camera_selection-camera_id') # 'All', '1', '2'
         camera_config_name = self.data.pop('config_name')
         json_file = '%s/%s.json' % (self.CONFIGS_LOCATION, camera_config_name)
         json_content = json.dumps(self.data, sort_keys=True, indent=4)
@@ -425,6 +425,7 @@ class IMICamera(Camera):
                 )
             )
         return results
+
 
 class CISCamera(Camera):
     pass
