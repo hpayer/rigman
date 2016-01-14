@@ -144,27 +144,6 @@ class IMIExposureForm(Form):
     )
     dc_indoor_shut_mode = SelectField(
         "Shutter",
-        # choices=[
-        #     (0x0, 'Auto'),
-        #     (0x1, '1/60(50)'),
-        #     (0x2, '1/100(120)(FLK)'),
-        #     (0x3, '1/240(200)'),
-        #     (0x4, '1/480(400)'),
-        #     (0x5, '1/1000'),
-        #     (0x6, '1/2000'),
-        #     (0x7, '1/5000'),
-        #     (0x8, '1/10000'),
-        #     (0x9, '1/50000'),
-        #     (0xA, 'x2'),
-        #     (0xB, 'x4'),
-        #     (0xC, 'x6'),
-        #     (0xD, 'x8'),
-        #     (0xE, 'x10'),
-        #     (0xF, 'x15'),
-        #     (0x10, 'x20'),
-        #     (0x11, 'x25'),
-        #     (0x12, 'x30'),
-        # ],
         choices=[
             (0, 'Auto'),
             (1, '1/60(50)'),
@@ -192,24 +171,6 @@ class IMIExposureForm(Form):
 class IMIAGCLimitAndBrightness(Form):
     agc_mode = SelectField(
         "Mode",
-        # choices=[
-        #     (0x0, 'AGC Off'),
-        #     (0x1, 'AGC 17 Limit (2.8 db)'),
-        #     (0x2, 'AGC 34 Limit (5.6 db)'),
-        #     (0x3, 'AGC 51 Limit (8.4 db)'),
-        #     (0x4, 'AGC 68 Limit (11.2db)'),
-        #     (0x5, 'AGC 85 Limit (14 db))'),
-        #     (0x6, 'AGC 102 Limit(16.8db))'),
-        #     (0x7, 'AGC 119 Limit(19.6db))'),
-        #     (0x8, 'AGC 136 Limit(22.4db))'),
-        #     (0x9, 'AGC 153 Limit(25.2db))'),
-        #     (0xA, 'AGC 170 Limit(28 db))'),
-        #     (0xB, 'AGC 187 Limit(30.8db))'),
-        #     (0xC, 'AGC 204 Limit(33.6db))'),
-        #     (0xD, 'AGC 221 Limit(36.4db))'),
-        #     (0xE, 'AGC 238 Limit(39.2db))'),
-        #     (0xF, 'AGC 255 Limit(42 db))'),
-        # ],
         choices=[
             (0, 'AGC Off'),
             (1, 'AGC 17 Limit (2.8 db)'),
@@ -340,11 +301,29 @@ class IMICamera(Camera):
     @property
     def control_commands(self):
         camera_id = self.data.get('camera_id', '-1')
-        template = '#OKC={value}\r'
-        if camera_id != '-1':
-            template = '#OKC2={camera_id}{value}\r'
+        if camera_id == '-1':
+            template = '#OKC={value}\r'
+            commands = dict([(key, template.format(**locals())) for key, value in self._control_commands.iteritems()])
 
-        return dict([(key, template.format(**locals())) for key, value in self._control_commands.iteritems()])
+        else:
+            controls= dict(
+                up='00 08 00 20',
+                down='00 10 00 20',
+                left='00 04 20 00',
+                right='00 02 20 00',
+                enter='00 03 00 5F',
+            )
+
+            camera_id_hex = str(hex(int(camera_id)).split('x')[1]).zfill(2)
+
+            commands = {}
+            for key, value in controls.items():
+                tmp = camera_id_hex + ' ' + value
+                checksum = hex(sum([int(i, 16) for i in a.split()])).split('x')[-1]
+                value = 'ff ' + camera_id_hex + ' ' + value + ' ' + checksum
+                #convert to bytes
+                commands.update(dict(key, value))
+
 
     def execute(self, data):
         command = data.pop('command')
