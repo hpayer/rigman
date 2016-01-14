@@ -22,8 +22,9 @@ function command_click(button){
                     }
                 )
             }
-            if (command == 'save'){
-                console.log('save')
+            if (command == 'save' || command == 'delete'){
+                console.log(command);
+                location.reload();
             }
 
         },
