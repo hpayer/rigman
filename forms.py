@@ -126,8 +126,9 @@ class ToggleWidget(widgets.CheckboxInput):
 
 
 class ToggleField(BooleanField):
-    input_type = 'range'
+    # input_type = 'range'
     widget = ToggleWidget()
+    # widget = widgets.CheckboxInput()
 
 
 

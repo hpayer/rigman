@@ -1,5 +1,8 @@
 {
-    "exposure-dc_indoor_shut_mode": "0",
+    "agc-agc_mode": "0", 
+    "agc-brightness": "50", 
+    "agc-brightness_number": "50", 
+    "exposure-dc_indoor_shut_mode": "0", 
     "exposure-dc_lens_mode": "0", 
     "hue-hue_gain_b": "128", 
     "hue-hue_gain_b_number": "128", 
@@ -7,6 +10,7 @@
     "hue-hue_gain_g_number": "128", 
     "hue-hue_gain_r": "128", 
     "hue-hue_gain_r_number": "128", 
+    "white_balance-awc_set": "0", 
     "white_balance-manual_blue_gain": "50", 
     "white_balance-manual_blue_gain_number": "50", 
     "white_balance-manual_red_gain": "50", 

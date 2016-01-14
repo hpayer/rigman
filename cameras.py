@@ -73,23 +73,33 @@ class IMIWhiteBalanceForm(Form):
         choices=[(0, 'ATW'), (1, 'AWC'), (2, 'INDOOR'), (3, 'OUTDOOR'), (4, 'MANUAL'), (5, 'AWB')],
         default=4,
     )
+
     manual_blue_gain = IntegerRangeWithNumberField(
         "Blue Gain",
         validators=[
             validators.DataRequired(),
-            validators.NumberRange(min=1, max=100, message='min:%(min)s max%(max)s')
+            validators.NumberRange(min=0, max=100, message='min:%(min)s max%(max)s')
         ],
-        default=50
+        default=50,
+        minimum=0,
+        maximum=100,
     )
     manual_red_gain = IntegerRangeWithNumberField(
-       "Red Gain",
+        "Red Gain",
         validators=[
             validators.DataRequired(),
-            validators.NumberRange(min=1, max=100, message='min:%(min)s max%(max)s')
+            validators.NumberRange(min=0, max=100, message='min:%(min)s max%(max)s')
         ],
-        default=50
+        default=50,
+        minimum=0,
+        maximum=100,
     )
-    awc_set = ToggleField('AWC Set')
+    # awc_set = ToggleField('AWC Set')
+    awc_set = SelectField(
+        'AWC Set',
+        choices=[(0, 'Off'), (1, 'On')],
+        default=0
+    )
 
 
 class IMIHueForm(Form):
@@ -100,7 +110,7 @@ class IMIHueForm(Form):
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
         default=128,
-        minimum=1,
+        minimum=0,
         maximum=255,
     )
 
@@ -111,7 +121,7 @@ class IMIHueForm(Form):
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
         default=128,
-        minimum=1,
+        minimum=0,
         maximum=255,
     )
 
@@ -122,7 +132,7 @@ class IMIHueForm(Form):
             validators.NumberRange(min=0, max=255, message='min:%(min)s max%(max)s')
         ],
         default=128,
-        minimum=1,
+        minimum=0,
         maximum=255,
     )
 
@@ -158,11 +168,47 @@ class IMIExposureForm(Form):
     )
 
 
+class IMIAGCLimitAndBrightness(Form):
+    agc_mode = SelectField(
+        "Mode",
+        choices=[
+            (0x0, 'AGC Off'),
+            (0x1, 'AGC 17 Limit (2.8 db)'),
+            (0x2, 'AGC 34 Limit (5.6 db)'),
+            (0x3, 'AGC 51 Limit (8.4 db)'),
+            (0x4, 'AGC 68 Limit (11.2db)'),
+            (0x5, 'AGC 85 Limit (14 db))'),
+            (0x6, 'AGC 102 Limit(16.8db))'),
+            (0x7, 'AGC 119 Limit(19.6db))'),
+            (0x8, 'AGC 136 Limit(22.4db))'),
+            (0x9, 'AGC 153 Limit(25.2db))'),
+            (0xA, 'AGC 170 Limit(28 db))'),
+            (0xB, 'AGC 187 Limit(30.8db))'),
+            (0xC, 'AGC 204 Limit(33.6db))'),
+            (0xD, 'AGC 221 Limit(36.4db))'),
+            (0xE, 'AGC 238 Limit(39.2db))'),
+            (0xF, 'AGC 255 Limit(42 db))'),
+        ]
+    )
+    brightness = IntegerRangeWithNumberField(
+        "Brightness",
+        validators=[
+            validators.DataRequired(),
+            validators.NumberRange(min=0, max=100, message='min:%(min)s max%(max)s')
+        ],
+        default=50,
+        minimum=0,
+        maximum=100,
+    )
+
+
+
 class IMIRegistersForm(Form):
     camera_selection = FormField(CameraSelectionForm, label="Selection")
     camera_config = FormField(CameraConfigForm, label="Config")
     white_balance = FormField(IMIWhiteBalanceForm, label="White Balance")
     exposure = FormField(IMIExposureForm, label="Exposure")
+    agc = FormField(IMIAGCLimitAndBrightness, label="AGC Limit & Brightness")
     hue = FormField(IMIHueForm, label='Hue')
 
 
@@ -234,11 +280,13 @@ class IMICamera(Camera):
         'hue-hue_gain_b': '03E7',
         'hue-hue_gain_g': '03E5',
         'hue-hue_gain_r': '03E3',
+        'white_balance-awc_set': 'E21F',
         'white_balance-manual_blue_gain': 'E201',
         'white_balance-manual_red_gain': 'E202',
         'white_balance-white_balance_mode': 'E200',
+        'agc-agc_mode': 'E0F2',
+        'agc-brightness': 'E0F6',
     }
-
 
     def __init__(self):
         self.bus = Rig_io()
@@ -261,6 +309,8 @@ class IMICamera(Camera):
     def execute(self, data):
         command = data.pop('command')
         self.data = data
+        for k, v in sorted(self.data.items()):
+            print k, v
         # print 'executing:', command
 
         if command in self._control_commands:
@@ -314,7 +364,7 @@ class IMICamera(Camera):
     def record_stop(self):
         print 'stop recording'
         self.bus.rec_on()
-        time.sleep(4)
+        time.sleep(0.1)
         self.bus.rec_off()
 
     def all_off(self):
