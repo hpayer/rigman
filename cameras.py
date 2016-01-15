@@ -391,7 +391,7 @@ class IMICamera(Camera):
     def flash_and_beep(self):
         print 'closing contact'
         self.bus.cl_on()
-        time.sleep(0.1)
+        time.sleep(1)
         print 'openning contact'
         self.bus.cl_off()
         print 'done'
@@ -405,7 +405,7 @@ class IMICamera(Camera):
     def record_stop(self):
         print 'stop recording'
         self.bus.rec_on()
-        time.sleep(0.1)
+        time.sleep(2)
         self.bus.rec_off()
 
     def all_off(self):
@@ -430,7 +430,8 @@ class IMICamera(Camera):
         template = "#ISPW={address}{data}\r"
         if camera_id != -1:
             template = "#ISPW2={camera_id}{address}{data}\r"
-            camera_id = '%02d' % camera_id
+            #camera_id = '%02d' % camera_id
+            camera_id = str(hex(int(camera_id)).split('x')[1]).zfill(2)
 
         for key, value in self.data.items():
             if key.endswith('_number'):
