@@ -330,9 +330,8 @@ class IMICamera(Camera):
             commands = {}
             for key, value in controls.items():
                 tmp = camera_id_hex + ' ' + value
-                checksum = hex(sum([int(i, 16) for i in value.split()])).split('x')[-1]
+                checksum = hex(sum([int(i, 16) for i in tmp.split()])).split('x')[-1]
                 value = 'ff ' + camera_id_hex + ' ' + value + ' ' + checksum
-                value = self.hex_to_bytes(value)
                 #convert to bytes
                 commands.update({key: value})
             commands.update(dict(
@@ -354,11 +353,11 @@ class IMICamera(Camera):
             if camera_id == '-1':
                 self.send_command(self.control_commands[command], port=self.port)
             else:
-                self.send_command(self.control_commands[command], port=self.port)
-                self.send_command(self.control_commands['zeros'], port=self.port)
-                self.send_command(self.control_commands['stop'], port=self.port)
+                self.send_command(self.hex_to_bytes(self.control_commands[command]), port=self.port)
+                self.send_command(self.hex_to_bytes(self.control_commands['zeros']), port=self.port)
+                self.send_command(self.hex_to_bytes(self.control_commands['stop']), port=self.port)
 
-            print command, 'executed'
+            print command, self.control_commands[command], 'executed'
             return
 
         local_command = getattr(self, command, None)
