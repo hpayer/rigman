@@ -330,11 +330,11 @@ class IMICamera(Camera):
             commands = {}
             for key, value in controls.items():
                 tmp = camera_id_hex + ' ' + value
-                checksum = hex(sum([int(i, 16) for i in a.split()])).split('x')[-1]
+                checksum = hex(sum([int(i, 16) for i in value.split()])).split('x')[-1]
                 value = 'ff ' + camera_id_hex + ' ' + value + ' ' + checksum
                 value = self.hex_to_bytes(value)
                 #convert to bytes
-                commands.update(dict(key, value))
+                commands.update({key: value})
             commands.update(dict(
                 zeros=self.hex_to_bytes("00 00 00 00 00 00 00"),
                 stop=self.hex_to_bytes('ff ' + camera_id_hex + ' 00 00 00 00 ' + camera_id_hex)
