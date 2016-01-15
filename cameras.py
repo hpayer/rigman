@@ -335,8 +335,8 @@ class IMICamera(Camera):
                 #convert to bytes
                 commands.update({key: value})
             commands.update(dict(
-                zeros=self.hex_to_bytes("00 00 00 00 00 00 00"),
-                stop=self.hex_to_bytes('ff ' + camera_id_hex + ' 00 00 00 00 ' + camera_id_hex)
+                zeros="00 00 00 00 00 00 00",
+                stop='ff ' + camera_id_hex + ' 00 00 00 00 ' + camera_id_hex
             ))
 
         return commands
