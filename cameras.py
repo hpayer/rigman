@@ -257,6 +257,17 @@ class Camera(object):
     @property
     def config_choices(self):
         return [(config, config.title()) for config in self.configs]
+    @staticmethod
+    def hex_to_bytes( hexStr ):
+        """
+        Convert a string hex byte values into a byte string. The Hex Byte values may
+        or may not be space separated.
+        """
+        bytes = []
+        hexStr = ''.join( hexStr.split(" ") )
+        for i in range(0, len(hexStr), 2):
+            bytes.append( chr( int (hexStr[i:i+2], 16 ) ) )
+        return ''.join(bytes)
 
 
 class IMICamera(Camera):
@@ -321,9 +332,15 @@ class IMICamera(Camera):
                 tmp = camera_id_hex + ' ' + value
                 checksum = hex(sum([int(i, 16) for i in a.split()])).split('x')[-1]
                 value = 'ff ' + camera_id_hex + ' ' + value + ' ' + checksum
+                value = self.hex_to_bytes(value)
                 #convert to bytes
                 commands.update(dict(key, value))
+            commands.update(dict(
+                zeros=self.hex_to_bytes("00 00 00 00 00 00 00"),
+                stop=self.hex_to_bytes('ff ' + camera_id_hex + ' 00 00 00 00 ' + camera_id_hex)
+            ))
 
+        return commands
 
     def execute(self, data):
         command = data.pop('command')
@@ -331,10 +348,16 @@ class IMICamera(Camera):
         for k, v in sorted(self.data.items()):
             print k, v
         # print 'executing:', command
+        camera_id = self.data.get('camera_id', '-1')
 
         if command in self._control_commands:
+            if camera_id == '-1':
+                self.send_command(self.control_commands[command], port=self.port)
+            else:
+                self.send_command(self.control_commands[command], port=self.port)
+                self.send_command(self.control_commands['zeros'], port=self.port)
+                self.send_command(self.control_commands['stop'], port=self.port)
 
-            self.send_command(self.control_commands[command], port=self.port)
             print command, 'executed'
             return
 
